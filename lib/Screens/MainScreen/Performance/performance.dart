@@ -18,16 +18,13 @@ class PerformanceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
     final String username = args?['username'] ?? 'Unknown';
-    
-    // Get the screen width
-    final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Performance So Far...'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -44,7 +41,7 @@ class PerformanceScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // The scrollable ListView to display the tests
+            // Scrollable ListView to display the tests
             Expanded(
               child: ListView.builder(
                 itemCount: testList.length > 10 ? 10 : testList.length, // Limit to 10 tests
@@ -52,28 +49,33 @@ class PerformanceScreen extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: SizedBox(
-                      width: screenWidth * 0.8, // Each button will take 80% of screen width
+                      width: double.infinity, // Each button takes the full width
                       child: ElevatedButton(
                         onPressed: () {
                           // Navigate to detailed analysis with the specific testId
                           Navigator.pushNamed(
                             context,
-                            '/detailedanalysis', // Navigate to the detailed analysis page
+                            '/detailedanalysis',
                             arguments: {
-                              'username': username, // Replace with actual username
-                              'testId': testList[index], // Pass the test ID (Test 1, Test 2, etc.)
+                              'username': username,
+                              'testId': testList[index],
                             },
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          backgroundColor: Colors.blueAccent, // Match color scheme
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
+                          elevation: 5, // Add shadow for 3D effect
                         ),
                         child: Text(
                           testList[index],
-                          style: const TextStyle(fontSize: 18),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white, // White text color for readability
+                          ),
                         ),
                       ),
                     ),

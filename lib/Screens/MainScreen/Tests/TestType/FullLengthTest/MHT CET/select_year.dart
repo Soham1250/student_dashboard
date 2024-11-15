@@ -21,22 +21,20 @@ class SelectCETyear extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
-
-    // Default to 'Unknown' if any argument is missing
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
     final String username = args?['username'] ?? 'Unknown';
     final String testType = args?['testType'] ?? 'Unknown';
     final String flttype = args?['flttype'] ?? 'Unknown';
 
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text('username: $username, testType: $testType, flttype: $flttype'),
+        title: Text('MHT CET Year Selection'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Title
             const Text(
@@ -54,18 +52,16 @@ class SelectCETyear extends StatelessWidget {
               child: ListView.builder(
                 itemCount: tests.length,
                 itemBuilder: (context, index) {
-                  return Column(
-                    children: [
-                      _buildTestButton(
-                        context,
-                        tests[index],
-                        username,
-                        testType,
-                        flttype,
-                        testType + flttype + tests[index],
-                      ),
-                      const SizedBox(height: 20), // Space between buttons
-                    ],
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: _buildTestButton(
+                      context,
+                      tests[index],
+                      username,
+                      testType,
+                      flttype,
+                      testType + flttype + tests[index],
+                    ),
                   );
                 },
               ),
@@ -79,11 +75,8 @@ class SelectCETyear extends StatelessWidget {
   // Helper method to create buttons for each test
   Widget _buildTestButton(BuildContext context, String label, String username,
       String testType, String flttype, String testId) {
-    // Get the width of the screen
-    double screenWidth = MediaQuery.of(context).size.width;
-
     return SizedBox(
-      width: screenWidth * 0.8, // 80% of screen width
+      width: double.infinity, // Occupy full width
       child: ElevatedButton(
         onPressed: () {
           Navigator.pushNamed(
@@ -98,7 +91,8 @@ class SelectCETyear extends StatelessWidget {
           );
         },
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 20), // Button height
+          backgroundColor: Colors.blueAccent,
+          padding: const EdgeInsets.symmetric(vertical: 18), // Button height
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15), // Rounded corners
           ),
@@ -106,7 +100,11 @@ class SelectCETyear extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 18), // Button text size
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 18,
+            color: Colors.white, // Button text color
+          ),
         ),
       ),
     );

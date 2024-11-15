@@ -4,15 +4,12 @@ class StatisticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
-
-    // Safely handle null and provide a default username if not provided
     final String username = args?['username'] ?? 'Unknown';
-
-    double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Statistics'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -31,37 +28,40 @@ class StatisticsScreen extends StatelessWidget {
 
             // Strongest Subject
             _buildStatisticsButton(
-              context, 
-              'Strongest Subject: Physics \n You can always improve!', 
-              Colors.green, 
-              screenWidth, 
-              username, 
-              'strong',  // Subject Type
-              'physics',  // Subject ID
+              context,
+              'Strongest Subject: Physics',
+              'You can always improve!',
+              Colors.green,
+              Icons.check_circle,
+              username,
+              'strong',
+              'physics',
             ),
             const SizedBox(height: 20),
 
             // Needs Revision
             _buildStatisticsButton(
-              context, 
-              'Needs Revision: Chemistry\n Try hard champ!', 
-              Colors.orange, 
-              screenWidth, 
-              username, 
-              'revision',  // Subject Type
-              'chemistry',  // Subject ID
+              context,
+              'Needs Revision: Chemistry',
+              'Try hard champ!',
+              Colors.orange,
+              Icons.refresh,
+              username,
+              'revision',
+              'chemistry',
             ),
             const SizedBox(height: 20),
 
             // Weakest Subject
             _buildStatisticsButton(
-              context, 
-              'Weakest Subject: Mathematics\n The start is always difficult.', 
-              Colors.red, 
-              screenWidth, 
-              username, 
-              'weak',  // Subject Type
-              'mathematics',  // Subject ID
+              context,
+              'Weakest Subject: Mathematics',
+              'The start is always difficult.',
+              Colors.red,
+              Icons.warning,
+              username,
+              'weak',
+              'mathematics',
             ),
           ],
         ),
@@ -71,40 +71,67 @@ class StatisticsScreen extends StatelessWidget {
 
   // Helper method to create buttons for statistics and pass parameters
   Widget _buildStatisticsButton(
-    BuildContext context, 
-    String label, 
-    Color color, 
-    double screenWidth,
-    String username, 
-    String subjectType, 
+    BuildContext context,
+    String title,
+    String description,
+    Color color,
+    IconData icon,
+    String username,
+    String subjectType,
     String subjectID,
   ) {
-    return SizedBox(
-      width: screenWidth * 0.9,  // Button takes 90% of the screen width
-      child: ElevatedButton(
-        onPressed: () {
-          // Navigate to the SubjectReviewScreen with required parameters
-          Navigator.pushNamed(
-            context,
-            '/subjectreview',
-            arguments: {
-              'username': username,
-              'subjectType': subjectType,
-              'subjectID': subjectID,
-            },
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),  // Rounded corners
-          ),
-          elevation: 5,
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          '/subjectreview',
+          arguments: {
+            'username': username,
+            'subjectType': subjectType,
+            'subjectID': subjectID,
+          },
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 18),
+        elevation: 5,
+      ),
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center, // Center horizontally
+          crossAxisAlignment: CrossAxisAlignment.center, // Center vertically
+          children: [
+            Icon(icon, size: 40, color: Colors.white),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

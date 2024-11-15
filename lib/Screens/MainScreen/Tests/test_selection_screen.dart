@@ -5,33 +5,41 @@ class TestSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Retrieve the username parameter
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
-    final String username = args?["username"]?? "Unknown"; 
+    final String username = args?["username"] ?? "Unknown";
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Test Selection'),
+        title: const Text(
+          'Test Selection',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        ),
+        backgroundColor: Colors.blueAccent,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-          crossAxisAlignment:
-              CrossAxisAlignment.stretch, // Stretch buttons to fill width
+          crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch buttons to fill width
           children: [
             Text(
-              'Welcome, $username', // Display the passed username
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              'Welcome, $username',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
 
-            // Button for Test-Wise Test
+            // Button for Topic-Wise Test
             _buildTestSelectionButton(
               label: 'Topic-Wise Test',
               context: context,
               route: '/topicWiseTest',
-              username: username, // Pass the username
-              testType: 'topicwise', // Pass testType as "topicwise"
+              username: username,
+              testType: 'topicwise',
             ),
             const SizedBox(height: 20), // Space between buttons
 
@@ -44,6 +52,7 @@ class TestSelectionScreen extends StatelessWidget {
               testType: 'subjectwise',
             ),
             const SizedBox(height: 20),
+
             // Button for Full Syllabus Test
             _buildTestSelectionButton(
               label: 'Full Syllabus Test',
@@ -74,20 +83,24 @@ class TestSelectionScreen extends StatelessWidget {
           arguments: {
             'username': username,
             'testType': testType,
-          }, // Pass both username and testType as a Map
-        ); // Navigate to respective test type
+          },
+        );
       },
       style: ElevatedButton.styleFrom(
-        padding:
-            const EdgeInsets.symmetric(vertical: 20), // Height of the button
+        backgroundColor: Colors.blueAccent,
+        padding: const EdgeInsets.symmetric(vertical: 20), // Button height
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15), // Rounded corners
+          borderRadius: BorderRadius.circular(15),
         ),
-        elevation: 5, // Shadow for a 3D effect
+        elevation: 5,
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 18), // Button text size
+        style: const TextStyle(
+          fontSize: 18,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

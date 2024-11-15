@@ -12,7 +12,7 @@ import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/chemistry_chapte
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/biology_chapter.dart';
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/math_chapter.dart';
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/select_topicwise_difficulty.dart';
-import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/select_topic_wise_test.dart';
+// import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/select_topic_wise_test.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subject.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subjectwise_difficulty.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subjectwise_test.dart';
@@ -86,7 +86,7 @@ class StudentDashboardApp extends StatelessWidget {
           '/biologyTopics': (context) => BiologyChapterScreen(),
           '/mathTopics': (context) => MathChapterScreen(),
           '/selectDifficulty': (context) => SelectTopicWiseDifficultyScreen(),
-          '/selectTopicWiseTest': (context) => SelectTopicWiseTest(),
+          // '/selectTopicWiseTest': (context) => SelectTopicWiseTest(),
           '/testanalysis': (context) => TestAnalysisScreen(),
 
           // Subject Wise

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ChemistryChapterScreen extends StatelessWidget {
-  final List<String> Chemchapters = [
+  final List<String> chemChapters = [
     "Solid State",
     "Chemical Thermodynamics and Energetic",
     "Electrochemistry",
@@ -34,15 +34,17 @@ class ChemistryChapterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, String> args =  ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+    final Map<String, String> args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>;
 
-    final String username = args['username']??"Unknown";
-    final String testType = args['testType']??"Unknown";
-    final String subjectId = args['subjectId']??"Unknown";
+    final String username = args['username'] ?? "Unknown";
+    final String testType = args['testType'] ?? "Unknown";
+    final String subjectId = args['subjectId'] ?? "Unknown";
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select Topic'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -55,16 +57,23 @@ class ChemistryChapterScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: Chemchapters.length,
+                itemCount: chemChapters.length,
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: _buildChapterButton(context, Chemchapters[index],username, testType, subjectId, Chemchapters[index]),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: _buildChapterButton(
+                        context,
+                        chemChapters[index],
+                        username,
+                        testType,
+                        subjectId,
+                        chemChapters[index]),
                   );
                 },
               ),
@@ -76,7 +85,7 @@ class ChemistryChapterScreen extends StatelessWidget {
   }
 
   Widget _buildChapterButton(BuildContext context, String chapter,
-      String username, String testType, String subjectId, String chapt) {
+      String username, String testType, String subjectId, String chapterName) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -85,19 +94,25 @@ class ChemistryChapterScreen extends StatelessWidget {
             'username': username,
             'testType': testType,
             'subjectId': subjectId,
-            'chapt': chapt
-          }); // Navigate to test interface for the selected chapter
+            'chapt': chapterName,
+          });
         },
         style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blueAccent,
           padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(10),
           ),
           elevation: 5,
         ),
         child: Text(
           chapter,
-          style: const TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

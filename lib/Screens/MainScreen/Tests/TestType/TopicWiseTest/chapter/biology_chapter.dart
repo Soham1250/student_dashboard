@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
 class BiologyChapterScreen extends StatelessWidget {
-  final List<String> Biochapters = [
-    "Biochemistry of cell",
-    "Diversity in organisms",
+  final List<String> bioChapters = [
+    "Biochemistry of Cell",
+    "Diversity in Organisms",
     "Plant Growth and Development",
-    "Plant Water Relations and Mineral Nutrition",
+    "Plant Water Relations and Mineral Nutrition",
     "Genetic Basis of Inheritance",
-    "Gene: its nature",
-    "Expression and regulation",
+    "Gene: Its Nature",
+    "Expression and Regulation",
     "Biotechnology: Process and Application",
     "Enhancement in Food Production",
     "Microbes in Human Welfare",
     "Photosynthesis",
     "Respiration",
     "Reproduction in Plants",
-    "Organisms and Environment-Il",
+    "Organisms and Environment-II",
   ];
 
   @override
@@ -23,13 +23,14 @@ class BiologyChapterScreen extends StatelessWidget {
     final Map<String, String> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, String>;
 
-    final String username = args['username']??"Unknown";
-    final String testType = args['testType']??"Unknown";
-    final String subjectId = args['subjectId']??"Unknown";
+    final String username = args['username'] ?? "Unknown";
+    final String testType = args['testType'] ?? "Unknown";
+    final String subjectId = args['subjectId'] ?? "Unknown";
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select Topic'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -42,16 +43,23 @@ class BiologyChapterScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: Biochapters.length,
+                itemCount: bioChapters.length,
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: _buildChapterButton(context, Biochapters[index],username, testType, subjectId, Biochapters[index]),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: _buildChapterButton(
+                        context,
+                        bioChapters[index],
+                        username,
+                        testType,
+                        subjectId,
+                        bioChapters[index]),
                   );
                 },
               ),
@@ -63,7 +71,7 @@ class BiologyChapterScreen extends StatelessWidget {
   }
 
   Widget _buildChapterButton(BuildContext context, String chapter,
-      String username, String testType, String subjectId, String chapt) {
+      String username, String testType, String subjectId, String chapterName) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -72,19 +80,25 @@ class BiologyChapterScreen extends StatelessWidget {
             'username': username,
             'testType': testType,
             'subjectId': subjectId,
-            'chapt': chapt
-          }); // Navigate to test interface for the selected chapter
+            'chapt': chapterName,
+          });
         },
         style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blueAccent,
           padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(10),
           ),
           elevation: 5,
         ),
         child: Text(
           chapter,
-          style: const TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

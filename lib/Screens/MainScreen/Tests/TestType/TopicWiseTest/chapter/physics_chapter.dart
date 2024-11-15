@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class PhysicsChapterScreen extends StatelessWidget {
-  final List<String> Phychapters = [
+  final List<String> phyChapters = [
     "Circular motion",
     "Rotational motion",
     "Oscillations",
@@ -36,41 +36,46 @@ class PhysicsChapterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final Map<String, String> args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
 
-    final String username = args['username']??"Unknown";
-    final String testType = args['testType']??"Unknown";
-    final String subjectId = args['subjectId']??"Unknown";
+    final String username = args['username'] ?? "Unknown";
+    final String testType = args['testType'] ?? "Unknown";
+    final String subjectId = args['subjectId'] ?? "Unknown";
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select Topic'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,  // Make sure children stretch to fill width
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-
               'Select Chapter',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 20),  // Space between title and list
-            
-            // Scrollable list of chapters
+            const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: Phychapters.length,
+                itemCount: phyChapters.length,
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),  // Space between buttons
-                    child: _buildChapterButton(context, Phychapters[index],username, testType, subjectId, Phychapters[index]),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: _buildChapterButton(
+                      context,
+                      phyChapters[index],
+                      username,
+                      testType,
+                      subjectId,
+                      phyChapters[index],
+                    ),
                   );
                 },
               ),
@@ -81,24 +86,35 @@ class PhysicsChapterScreen extends StatelessWidget {
     );
   }
 
-  // Helper method to create chapter buttons
-  Widget _buildChapterButton(BuildContext context, String chapter,String username, String testType, String subjectId, String chapt) {
+  Widget _buildChapterButton(BuildContext context, String chapter,
+      String username, String testType, String subjectId, String chapterName) {
     return SizedBox(
-      width: double.infinity,  // Makes the button fill the full width
+      width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          Navigator.pushNamed(context, '/selectDifficulty',arguments: {'username': username, 'testType': testType, 'subjectId': subjectId, 'chapt': chapt});  // Navigate to test interface for the selected chapter
+          Navigator.pushNamed(context, '/selectDifficulty', arguments: {
+            'username': username,
+            'testType': testType,
+            'subjectId': subjectId,
+            'chapt': chapterName,
+          });
         },
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 20),  // Button height
+          backgroundColor: Colors.blueAccent,
+          padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),  // Rounded corners
+            borderRadius: BorderRadius.circular(10),
           ),
-          elevation: 5,  // 3D effect
+          elevation: 5,
         ),
         child: Text(
           chapter,
-          style: const TextStyle(fontSize: 18),  // Font size for button text
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
