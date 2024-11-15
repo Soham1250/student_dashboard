@@ -63,10 +63,9 @@ class StudentDashboardApp extends StatelessWidget {
         // Handling dynamic routes
         onGenerateRoute: (settings) {
           if (settings.name == '/main') {
-            final String username = settings.arguments as String; // Pass username as an argument
             return MaterialPageRoute(
               builder: (context) {
-                return MainScreen(username: username); // Pass the username to MainScreen
+                return MainScreen(); // Pass the username to MainScreen
               },
             );
           }

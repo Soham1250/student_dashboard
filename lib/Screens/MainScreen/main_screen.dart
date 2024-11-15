@@ -1,9 +1,42 @@
 import 'package:flutter/material.dart';
+import '../../api/api_service.dart';
+import '../../api/endpoints.dart';
 
-class MainScreen extends StatelessWidget {
-  final String username;
+class MainScreen extends StatefulWidget {
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
 
-  MainScreen({required this.username});
+class _MainScreenState extends State<MainScreen> {
+  String _username = "Student"; // Default value while loading
+
+  
+  @override
+  void initState() {
+    super.initState();
+    fetchUsername();
+  }
+
+  Future<void> fetchUsername() async {
+    try {
+      // Call the API using ID 1 for testing purposes
+      final response = await ApiService().getRequest('$getStudentByIdEndpoint/1');
+      
+      if (response != null && response.containsKey('FirstName')) {
+        setState(() {
+          _username = response['FirstName']; // Extract only FirstName
+        });
+      } else {
+        setState(() {
+          _username = 'Student'; // Default value if FirstName is not found
+        });
+      }
+    } catch (error) {
+      setState(() {
+        _username = 'Student'; // Default in case of error
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +59,7 @@ class MainScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 20),
                 Text(
-                  'Hello, $username',
+                  'Hello, $_username',
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
                 ),
               ],
@@ -42,8 +75,8 @@ class MainScreen extends StatelessWidget {
                   _buildGridButton('Performance', Icons.bar_chart, context, '/performance'),
                   _buildGridButton('Statistics', Icons.insert_chart, context, '/statistics'),
                   _buildGridButton('Learn', Icons.school, context, '/learn'),
-                  _buildGridButton('Feedback', Icons.feedback, context, '/feedback'),
-                  _buildGridButton('Grievances', Icons.report_problem, context, '/grievances'),
+                  // _buildGridButton('Feedback', Icons.feedback, context, '/feedback'),
+                  // _buildGridButton('Grievances', Icons.report_problem, context, '/grievances'),
                 ],
               ),
             ),
@@ -56,7 +89,7 @@ class MainScreen extends StatelessWidget {
   Widget _buildGridButton(String label, IconData icon, BuildContext context, String route) {
     return ElevatedButton(
       onPressed: () {
-        Navigator.pushNamed(context, route, arguments: {'username': username});
+        Navigator.pushNamed(context, route, arguments: {'username': _username});
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blueAccent,

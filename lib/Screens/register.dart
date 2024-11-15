@@ -20,18 +20,9 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isOtpFieldVisible = false;
   bool _isEmailVerified = false;
 
-  // Method to validate if form fields are filled and email is verified
-  bool _isFormValid() {
-    return _isEmailVerified &&
-        _firstNameController.text.trim().isNotEmpty &&
-        _lastNameController.text.trim().isNotEmpty &&
-        _emailController.text.trim().isNotEmpty &&
-        _passwordController.text.trim().isNotEmpty &&
-        _phoneController.text.trim().isNotEmpty;
-  }
-
   void _updateFormValidity() {
-    setState(() {}); // Triggers a rebuild to update the register button's enabled/disabled state
+    setState(
+        () {}); // Triggers a rebuild to update the register button's enabled/disabled state
   }
 
   Future<void> _sendOtp() async {
@@ -64,60 +55,78 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() => _isLoading = true);
 
-    // Simulate OTP verification (replace with actual call)
-    final response = await ApiService().postRequest(verifyOtpEndpoint, {'OTP': otp});
+    // Make the API call to verify OTP
+    final response = await ApiService().postRequest(verifyOtpEndpoint, {
+      'Email': _emailController.text.trim(),
+      'OTP': otp,
+    });
 
     setState(() {
       _isLoading = false;
-      if (response != null && response['success'] == true) {
-        _isEmailVerified = true;  // Email verified successfully
+
+      // Check if the response contains the success message
+      if (response != null &&
+          response['message'] == "OTP verified successfully") {
+        _isEmailVerified = true;
         _errorMessage = 'Email verified successfully!';
-        _updateFormValidity(); // Update button state after OTP verification
+        _updateFormValidity(); // Update form validity to enable Register button
       } else {
-        _isEmailVerified = false; // Reset verification status on failure
+        _isEmailVerified = false;
         _errorMessage = 'OTP verification failed. Try again.';
       }
     });
   }
 
-  Future<void> _register() async {
-    if (!_isFormValid()) {
-      setState(() {
-        _errorMessage = 'Please fill in all the fields and verify your email.';
-      });
-      return; // Prevent registration if form is incomplete or email not verified
-    }
+// Method to validate if form fields are filled and email is verified
+  bool _isFormValid() {
+    return _isEmailVerified &&
+        _firstNameController.text.trim().isNotEmpty &&
+        _lastNameController.text.trim().isNotEmpty &&
+        _emailController.text.trim().isNotEmpty &&
+        _passwordController.text.trim().isNotEmpty &&
+        _phoneController.text.trim().isNotEmpty;
+  }
 
+ Future<void> _register() async {
+  if (!_isFormValid()) {
     setState(() {
-      _errorMessage = '';
-      _isLoading = true;
+      _errorMessage = 'Please fill in all the fields and verify your email.';
     });
+    return;
+  }
 
-    final Map<String, dynamic> requestData = {
-      'FirstName': _firstNameController.text.trim(),
-      'LastName': _lastNameController.text.trim(),
-      'Email': _emailController.text.trim(),
-      'Password': _passwordController.text.trim(),
-      'PhoneNumber': _phoneController.text.trim(),
-    };
+  setState(() {
+    _errorMessage = '';
+    _isLoading = true;
+  });
 
+  final Map<String, dynamic> requestData = {
+    'FirstName': _firstNameController.text.trim(),
+    'LastName': _lastNameController.text.trim(),
+    'Email': _emailController.text.trim(),
+    'Password': _passwordController.text.trim(),
+    'PhoneNumber': _phoneController.text.trim(),
+  };
+
+  try {
     final response = await ApiService().postRequest(registerEndpoint, requestData);
 
     setState(() => _isLoading = false);
 
-    if (response != null && response['success'] == true) {
+    // Check if registration was successful based on the presence of `UserID`
+    if (response != null && response.containsKey('UserID')) {
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: const Text("Registration Successful"),
-            content: const Text("You can now log in to the app."),
+            content: const Text("You have registered successfully! Please log in to continue."),
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/login');
+                  Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
                 },
-                child: const Text("Proceed to Login"),
+                child: const Text("Go to Login"),
               ),
             ],
           );
@@ -125,10 +134,20 @@ class _RegisterPageState extends State<RegisterPage> {
       );
     } else {
       setState(() {
-        _errorMessage = response['message'] ?? 'Registration failed. Please try again.';
+        _errorMessage = response?['message'] ?? 'Registration failed. Please try again.';
       });
     }
+  } catch (error) {
+    setState(() {
+      _isLoading = false;
+      _errorMessage = 'An error occurred. Please check your network connection.';
+    });
+    print("Error during registration: $error");
   }
+}
+
+
+
 
   @override
   void initState() {
@@ -155,7 +174,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register', style: TextStyle(fontSize: 24, color: Colors.white)),
+        title: const Text('Register',
+            style: TextStyle(fontSize: 24, color: Colors.white)),
         backgroundColor: Colors.teal,
         elevation: 0,
       ),
@@ -167,13 +187,19 @@ class _RegisterPageState extends State<RegisterPage> {
             const SizedBox(height: 20),
             const Text(
               'Welcome to the Club Champ!',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.teal),
+              style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             const Text(
               'What should we call you?',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.teal),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.teal),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -190,7 +216,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.teal, width: 2.0),
+                        borderSide:
+                            const BorderSide(color: Colors.teal, width: 2.0),
                       ),
                     ),
                   ),
@@ -205,7 +232,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.teal, width: 2.0),
+                        borderSide:
+                            const BorderSide(color: Colors.teal, width: 2.0),
                       ),
                     ),
                   ),
@@ -262,7 +290,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: _isLoading ? null : _sendOtp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
@@ -293,7 +322,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       onPressed: _isLoading ? null : _verifyOtp,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
@@ -302,7 +332,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.teal, width: 2.0),
+                    borderSide:
+                        const BorderSide(color: Colors.teal, width: 2.0),
                   ),
                 ),
               ),
@@ -312,7 +343,8 @@ class _RegisterPageState extends State<RegisterPage> {
             if (_errorMessage.isNotEmpty)
               Text(
                 _errorMessage,
-                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.bold),
               ),
             const SizedBox(height: 20),
 
@@ -326,25 +358,33 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[400],
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 30),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text('< Back', style: TextStyle(color: Colors.white)),
+                  child: const Text('< Back',
+                      style: TextStyle(color: Colors.white)),
                 ),
                 ElevatedButton(
-                  onPressed: _isFormValid() && !_isLoading ? _register : null,
+                  onPressed: _isFormValid() && !_isLoading
+                      ? _register
+                      : null, // Enable only if form is valid
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    backgroundColor: _isFormValid()
+                        ? Colors.teal
+                        : Colors.grey, // Show grey when disabled
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 30),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
-                      : const Text('Register >', style: TextStyle(color: Colors.white)),
+                      : const Text('Register >',
+                          style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
