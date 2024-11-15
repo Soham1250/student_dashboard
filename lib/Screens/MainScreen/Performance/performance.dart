@@ -32,7 +32,7 @@ class PerformanceScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Here are your latest 10 test results:',
+              'Here are your most recent test results:',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
