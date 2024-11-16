@@ -1,242 +1,112 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 class TestAnalysisScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> questions = [
-    {
-      'question': 'What is the determinant of the matrix [[2, 3], [1, 4]]?',
-      'correctAnswer': '5',
-    },
-    {
-      'question': 'Which of the following is an identity matrix?',
-      'correctAnswer': '[[1, 0], [0, 1]]',
-    },
-    {
-      'question': 'What is the trace of the matrix [[1, 2], [3, 4]]?',
-      'correctAnswer': '5',
-    },
-    {
-      'question': 'Matrix A is 2x3 and Matrix B is 3x2. What is the size of the resulting matrix when A is multiplied by B?',
-      'correctAnswer': '2x2',
-    },
-    {
-      'question': 'If A is a 3x3 matrix and det(A) = 4, what is det(2A)?',
-      'correctAnswer': '32',
-    },
-    {
-      'question': 'Which of the following is a scalar matrix?',
-      'correctAnswer': '[[3, 0], [0, 3]]',
-    },
-    {
-      'question': 'Which operation is required to invert a matrix?',
-      'correctAnswer': 'Matrix adjugate',
-    },
-    {
-      'question': 'What is the inverse of the matrix [[1, 0], [0, 1]]?',
-      'correctAnswer': '[[1, 0], [0, 1]]',
-    },
-    {
-      'question': 'Which matrix is a diagonal matrix?',
-      'correctAnswer': '[[2, 0], [0, 3]]',
-    },
-    {
-      'question': 'What is the rank of a 3x3 identity matrix?',
-      'correctAnswer': '3',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
-    // Extract arguments from ModalRoute
-    final Map<String, dynamic> args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    
-    final String username = args['username']??'Unknown';
-    final String testId = args['testId']??'Unknown';
-    
-    final List<String?> userResponses = List<String?>.from(args['answers']!);
+    // Get arguments passed from TestInterfaceScreen
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final List<Map<String, dynamic>> questions = args['questions'];
 
-    int correctCount = 0;
-    int incorrectCount = 0;
-    int unmarkedCount = 0;
+    // Calculate statistics
+    int totalQuestions = questions.length;
+    int correctAnswers = questions.where((q) => q['userAnswer'] == q['correctAnswer']).length;
 
-    // Scores for graph
-    final int topperScore = 10;
-    final int averageScore = 6;
-    final int lowestScore = 2;
-    final int userScore = correctCount;
-
-    List<Widget> resultWidgets = [];
-
-    for (int i = 0; i < questions.length; i++) {
-      String correctAnswer = questions[i]['correctAnswer'];
-      String? userAnswer = userResponses[i];
-
-      // Check if the user answered correctly
-      if (userAnswer == correctAnswer) {
-        correctCount++;
-        resultWidgets.add(_buildResultWidget(
-          context,
-          questions[i]['question'],
-          'Correct',
-          Colors.green,
-        ));
-      } else if (userAnswer == null || userAnswer.isEmpty) {
-        unmarkedCount++;
-        resultWidgets.add(_buildResultWidget(
-          context,
-          questions[i]['question'],
-          'Unanswered',
-          Colors.grey,
-        ));
-      } else {
-        incorrectCount++;
-        resultWidgets.add(_buildResultWidget(
-          context,
-          questions[i]['question'],
-          'Incorrect',
-          Colors.red,
-        ));
-      }
-    }
+    double accuracy = (correctAnswers / totalQuestions) * 100;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Test Analysis - $testId'),
+        title: const Text('Test Analysis'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Hello, $username. Here is your test analysis:',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-
-            // Score summary
-            Text(
-              'Correct: $correctCount, Incorrect: $incorrectCount, Unanswered: $unmarkedCount',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 20),
-
-            // Graph plotting
-            Text(
-              'Your Performance Compared to Others:',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: LineChart(
-                LineChartData(
-                  lineBarsData: [
-                    LineChartBarData(
-                      isCurved: true,
-                      spots: [
-                        FlSpot(2, lowestScore.toDouble()), // Lowest score
-                        FlSpot(6, averageScore.toDouble()), // Average score
-                        FlSpot(userScore.toDouble(), userScore.toDouble()), // User's score
-                        FlSpot(10, topperScore.toDouble()), // Topper score
-                      ],
-                      dotData: FlDotData(show: true),
-                      belowBarData: BarAreaData(show: false),
-                      color: Colors.blue,  // Line color
-                      barWidth: 3,
+            // Accuracy Score Display
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      'Accuracy: ${(accuracy).toStringAsFixed(2)}%',
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Correct: $correctAnswers / $totalQuestions',
+                      style: const TextStyle(fontSize: 18, color: Colors.green),
                     ),
                   ],
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          switch (value.toInt()) {
-                            case 2:
-                              return Text('Lowest');
-                            case 6:
-                              return Text('Average');
-                            case 10:
-                              return Text('Topper');
-                            default:
-                              return Text('');
-                          }
-                        },
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // List of Question Cards
+            Expanded(
+              child: ListView.builder(
+                itemCount: questions.length,
+                itemBuilder: (context, index) {
+                  final question = questions[index];
+                  bool isCorrect = question['userAnswer'] == question['correctAnswer'];
+
+                  return Card(
+                    elevation: 4,
+                    margin: const EdgeInsets.only(bottom: 16.0),
+                    color: isCorrect ? Colors.green[50] : Colors.red[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Question Text
+                          Text(
+                            'Q${index + 1}: ${question['question']}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // User's Answer
+                          Text(
+                            'Your Answer: ${question['userAnswer'] ?? 'Not Answered'}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: isCorrect ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+
+                          // Correct Answer
+                          if (!isCorrect)
+                            Text(
+                              'Correct Answer: ${question['correctAnswer']}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                  ),
-                  gridData: FlGridData(show: true),
-                  borderData: FlBorderData(show: true),
-                ),
+                  );
+                },
               ),
-            ),
-
-            // List of questions with their statuses
-            Expanded(
-              child: ListView(
-                children: resultWidgets,
-              ),
-            ),
-
-            // "View Detailed Analysis" Button
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/detailedanalysis', arguments: {
-                  'username': username,
-                  'testId': testId,
-                  'answers': userResponses,
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                elevation: 5,
-              ),
-              child: const Text('View Detailed Analysis'),
-            ),
-            
-            const SizedBox(height: 10),
-
-            // Button to return to the main menu
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/main', arguments: username);
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                elevation: 5,
-              ),
-              child: const Text('Return to Main Menu'),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  // Helper method to build a result widget
-  Widget _buildResultWidget(BuildContext context, String question, String status, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: ListTile(
-        title: Text(
-          question,
-          style: const TextStyle(fontSize: 16),
-        ),
-        trailing: Text(
-          status,
-          style: TextStyle(
-            fontSize: 16,
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Back to Dashboard'),
         ),
       ),
     );
