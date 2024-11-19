@@ -39,7 +39,7 @@ class TestSelectionScreen extends StatelessWidget {
               context: context,
               route: '/topicWiseTest',
               username: username,
-              testType: 'topicwise',
+              testType: 'topic-wise',
             ),
             const SizedBox(height: 20), // Space between buttons
 
@@ -49,7 +49,7 @@ class TestSelectionScreen extends StatelessWidget {
               context: context,
               route: '/subjectWise',
               username: username,
-              testType: 'subjectwise',
+              testType: 'subject-wise',
             ),
             const SizedBox(height: 20),
 
@@ -59,7 +59,7 @@ class TestSelectionScreen extends StatelessWidget {
               context: context,
               route: '/fullSyllabus',
               username: username,
-              testType: 'fullsyllabus',
+              testType: 'Full-length',
             ),
           ],
         ),

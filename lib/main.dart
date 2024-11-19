@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'Screens/login_page.dart';
 import 'Screens/MainScreen/main_screen.dart';
 import 'Screens/MainScreen/Tests/test_selection_screen.dart';
-import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/topicwise_test_interface_screen.dart';
+import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/UniversalTestInterface.dart';
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/topic_wise_test.dart';
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/physics_chapter.dart';
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/chemistry_chapter.dart';
@@ -76,7 +76,7 @@ class StudentDashboardApp extends StatelessWidget {
         routes: {
           '/': (context) => LoginPage(),
           '/testSelection': (context) => TestSelectionScreen(),
-          '/testInterface': (context) => TestInterfaceScreen(),
+          '/testInterface': (context) => UniversalTestInterface(),
           '/detailedanalysis': (context) => DetailedAnalysisScreen(),
 
           // Topic Wise
