@@ -36,8 +36,8 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
     // Extract arguments
     final Map<String, String> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, String>;
-    username = args['username']!;
-    testType = args['testType']!;
+    username = args['username']??"Unknown";
+    testType = args['testType']??"Unknown";
 
     // Set timer based on test type
     totalTime = testType == "Full-length" ? 180 * 60 : 40 * 60;

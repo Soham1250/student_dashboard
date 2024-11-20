@@ -82,12 +82,12 @@ class SelectMockFltTest extends StatelessWidget {
       onPressed: () {
         Navigator.pushNamed(
           context,
-          '/mockflttestinterface', // Assuming this is the next screen route
+          '/testInterface', // Assuming this is the next screen route
           arguments: {
             'username': username,
             'testType': testType,
             'flttype': flttype,
-            'testId': testId, // Pass the selected testId
+            // 'testId': testId, // Pass the selected testId
           },
         );
       },

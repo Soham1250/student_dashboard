@@ -31,15 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-<<<<<<< HEAD
-  # For HTTP requests
-  http: ^1.2.2 
-=======
   http: ^1.2.2
-  provider: ^6.0.0
-  fl_chart: ^0.69.0
-  flutter_html: ^3.0.0-beta.2
->>>>>>> c8fde344bad509af38ef5a1c43674f9f37f238ff
 
   # State management for dynamic UI updates
   provider: ^6.0.0 

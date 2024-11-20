@@ -12,16 +12,13 @@ import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/chemistry_chapte
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/biology_chapter.dart';
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/math_chapter.dart';
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/select_topicwise_difficulty.dart';
-// import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/select_topic_wise_test.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subject.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subjectwise_difficulty.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subjectwise_test.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/subjectwise_test_interface.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/select_flt.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/Mock/select_flt_test.dart';
-import 'Screens/MainScreen/Tests/TestType/FullLengthTest/Mock/flt_test_interface.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/MHT CET/select_year.dart';
-import 'Screens/MainScreen/Tests/TestType/FullLengthTest/MHT CET/mht_cet_test.dart';
 import 'Screens/MainScreen/Grievance/grievance.dart';
 import 'Screens/MainScreen/Grievance/manage_grievance.dart';
 import 'Screens/MainScreen/Grievance/new_greivance.dart';
@@ -86,7 +83,7 @@ class StudentDashboardApp extends StatelessWidget {
           '/biologyTopics': (context) => BiologyChapterScreen(),
           '/mathTopics': (context) => MathChapterScreen(),
           '/selectDifficulty': (context) => SelectTopicWiseDifficultyScreen(),
-          // '/selectTopicWiseTest': (context) => SelectTopicWiseTest(),
+          '/selectTopicWiseTest': (context) => UniversalTestInterface(),
           '/testanalysis': (context) => TestAnalysisScreen(),
 
           // Subject Wise
@@ -98,11 +95,11 @@ class StudentDashboardApp extends StatelessWidget {
           // Full Length Test
           '/fullSyllabus': (context) => SelectFLTScreen(),
           '/mockflt': (context) => SelectMockFltTest(),
-          '/mockflttestinterface': (context) => FltTestInterfaceScreen(),
+          '/mockflttestinterface': (context) => UniversalTestInterface(),
 
           // MHT CET
           '/selectcetyear': (context) => SelectCETyear(),
-          '/mhtcettestinterface': (context) => MHTCETtestinterface(),
+          '/mhtcettestinterface': (context) => UniversalTestInterface(),
 
           // Performance Analysis
           '/performance': (context) => PerformanceScreen(),
