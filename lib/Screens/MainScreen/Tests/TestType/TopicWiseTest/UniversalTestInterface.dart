@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:async'; // For Timer
-import 'package:http/http.dart' as http;
 import 'dart:convert'; // For JSON parsing
-// import '../../../../../api/api_service.dart';
-// import '../../../../../api/endpoints.dart';
+import '../../../../../api/api_service.dart';
+import '../../../../../api/endpoints.dart';
 
 class UniversalTestInterface extends StatefulWidget {
   @override
@@ -21,6 +20,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
 
   late String username; // Extracted from arguments
   late String testType; // Extracted from arguments
+  final ApiService _apiService = ApiService(); // Initialize API service
 
   @override
   void initState() {
@@ -51,29 +51,23 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
   // Fetch questions from the API
   Future<void> fetchQuestions() async {
     try {
-      final response = await http.post(
-        Uri.parse("http://localhost:4000/api/addquestionpaper"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"testType": testType}),
+      final response = await _apiService.postRequest(
+        addQuestionPaperEndpoint,
+        {"testType": testType}
       );
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        setState(() {
-          questions = (responseData['addedQuestions'] as List).map((q) {
-            return {
-              'question': q['Question'],
-              'options': [q['OptionA'], q['OptionB'], q['OptionC'], q['OptionD']],
-              'correctAnswer': q['CorrectOption'],
-              'userAnswer': null,
-              'markedForReview': false,
-            };
-          }).toList();
-          isLoading = false;
-        });
-      } else {
-        throw Exception("Failed to load questions");
-      }
+      
+      setState(() {
+        questions = (response['addedQuestions'] as List).map((q) {
+          return {
+            'question': q['Question'],
+            'options': [q['OptionA'], q['OptionB'], q['OptionC'], q['OptionD']],
+            'correctAnswer': q['CorrectOption'],
+            'userAnswer': null,
+            'markedForReview': false,
+          };
+        }).toList();
+        isLoading = false;
+      });
     } catch (e) {
       print("Error fetching questions: $e");
       setState(() {
