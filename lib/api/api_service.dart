@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../utils/error_handler.dart';
+import 'endpoints.dart';
 
 class ApiService {
   // A generic GET request method
@@ -28,14 +29,22 @@ class ApiService {
     }
   }
 
+  // Login method
+  Future<Map<String, dynamic>> login(String loginId, String password) async {
+    final body = {
+      'Email': loginId,
+      'Password': password,
+    };
+    return await postRequest(loginEndpoint, body);
+  }
+
   // Private method to process HTTP responses
   dynamic _processResponse(http.Response response) {
-  print(response.body); // Debug line
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body);
-  } else {
-    handleError(response); 
+    print(response.body); // Debug line
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      handleError(response); 
+    }
   }
-}
-
 }

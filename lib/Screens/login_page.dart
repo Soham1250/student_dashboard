@@ -1,8 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart'; 
-import 'package:http/http.dart' as http;
-import 'dart:convert';  
-import '../api/auth_api.dart';  
+import '../api/api_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,47 +10,34 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthApi _authApi = AuthApi();
   String _errorMessage = '';
   bool _isPasswordVisible = false;
-  bool _isLoading = false; // Loading state
+  bool _isLoading = false;
+  final ApiService _apiService = ApiService();
 
   // Method to handle login with API
   void _login() async {
-    final email = _loginController.text;
+    final loginId = _loginController.text;
     final password = _passwordController.text;
 
-    // Input validation
-    if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        _errorMessage = 'Please enter both email and password';
-      });
-      return;
-    }
-
     setState(() {
-      _isLoading = true; // Show loading indicator
-      _errorMessage = ''; // Clear previous error message
+      _isLoading = true;
+      _errorMessage = '';
     });
 
     try {
-      final response = await _authApi.login(email, password);
-      
-      // If we reach here, login was successful
-      Navigator.pushNamed(context, '/main', arguments: email);
+      await _apiService.login(loginId, password);
+      Navigator.pushNamed(context, '/main', arguments: loginId);
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString().contains('Network error')
-            ? 'Please check your internet connection'
-            : 'Invalid email or password';
+        _errorMessage = 'Server error. Please try again later.';
       });
     } finally {
       setState(() {
-        _isLoading = false; // Hide loading indicator
+        _isLoading = false;
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
