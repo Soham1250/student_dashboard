@@ -38,6 +38,12 @@ class ApiService {
     return await postRequest(loginEndpoint, body);
   }
 
+  // Get student details
+  Future<Map<String, dynamic>> getStudentDetails(String studentId) async {
+    final url = getStudentByIdEndpoint(studentId);
+    return await getRequest(url);
+  }
+
   // Private method to process HTTP responses
   dynamic _processResponse(http.Response response) {
     print(response.body); // Debug line

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../api/api_service.dart';
 import '../../api/endpoints.dart';
+import '../profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -11,7 +12,6 @@ class _MainScreenState extends State<MainScreen> {
   String _username = "Student"; // Default value while loading
   final ApiService _apiService = ApiService(); // Initialize API service
 
-  
   @override
   void initState() {
     super.initState();
@@ -39,6 +39,15 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  void _navigateToProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ProfileScreen(studentId: '1'), // Using ID 1 for testing
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,10 +64,13 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.deepPurple[100],
-                    child: const Icon(Icons.person, size: 40, color: Colors.deepPurple),
+                  InkWell(
+                    onTap: _navigateToProfile,
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.deepPurple[100],
+                      child: const Icon(Icons.person, size: 40, color: Colors.deepPurple),
+                    ),
                   ),
                   const SizedBox(width: 20),
                   Text(
