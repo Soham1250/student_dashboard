@@ -15,6 +15,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ApiService _apiService = ApiService();
   late Future<StudentProfile> _studentFuture;
 
+  void _handleEdit() {
+    // Will be implemented later
+  }
+
+  void _handleLogout() {
+    // Will be implemented later
+  }
+
+  void _handleCamera() {
+    // Will be implemented later
+  }
+
   @override
   void initState() {
     super.initState();
@@ -26,29 +38,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return StudentProfile.fromJson(response);
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  Widget _buildTextField(String label, String value) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.8,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 100,
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
-                ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                value,
-                style: const TextStyle(fontSize: 16),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
               ),
             ),
           ],
@@ -61,92 +77,199 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blueAccent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Profile',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: FutureBuilder<StudentProfile>(
-        future: _studentFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Container(
+        color: Colors.white,
+        child: FutureBuilder<StudentProfile>(
+          future: _studentFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading profile: ${snapshot.error}',
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(child: Text('No profile data found'));
-          }
-
-          final student = snapshot.data!;
-
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 24),
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.blue[100],
-                        child: Text(
-                          student.firstName[0] + student.lastName[0],
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildInfoRow('Name', student.fullName),
-                      _buildInfoRow('Email', student.email),
-                      _buildInfoRow('Phone', student.phoneNumber),
-                      _buildInfoRow('Class', student.currentClass),
-                      if (student.gap != null)
-                        _buildInfoRow('Gap', student.gap!),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
+            if (snapshot.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: null, // Disabled for now
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          backgroundColor: Colors.blueAccent,
-                        ),
-                        child: const Text('Edit Profile'),
-                      ),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 60,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: null, // Disabled for now
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          backgroundColor: Colors.redAccent,
-                        ),
-                        child: const Text('Logout'),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading profile: ${snapshot.error}',
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 16,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
-              ),
-            ],
-          );
-        },
+              );
+            }
+
+            if (!snapshot.hasData) {
+              return const Center(
+                child: Text(
+                  'No profile data found',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+              );
+            }
+
+            final student = snapshot.data!;
+
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 24),
+                        Stack(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.grey.shade300,
+                                  width: 1,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Colors.grey[100],
+                                child: Text(
+                                  student.firstName[0] + student.lastName[0],
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: _handleCamera,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    size: 20,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Camera',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        _buildTextField('Firstname', student.firstName),
+                        _buildTextField('Surname', student.lastName),
+                        _buildTextField('Email', student.email),
+                        _buildTextField('Phone', student.phoneNumber),
+                        _buildTextField('Class', student.currentClass),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _handleEdit,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: Colors.deepPurple,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Edit',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _handleLogout,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: Colors.red[600],
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
