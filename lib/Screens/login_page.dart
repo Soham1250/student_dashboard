@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart'; 
 import 'package:http/http.dart' as http;
 import 'dart:convert';  
+import '../api/auth_api.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,52 +14,51 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   String _errorMessage = '';
   bool _isPasswordVisible = false;
-  bool _isLoading = false; // Loading state
+  bool _isLoading = false; 
+  final AuthApi _authApi = AuthApi(); 
 
   // Method to handle login with API
   void _login() async {
-  final loginId = _loginController.text;
-  final password = _passwordController.text;
+    final loginId = _loginController.text;
+    final password = _passwordController.text;
 
-  setState(() {
-    _isLoading = true; // Show loading indicator
-    _errorMessage = ''; // Clear previous error message
-  });
-
-  const url = 'http://localhost:4000/api/login';
-  final body = jsonEncode({
-    'Email': loginId,
-    'Password': password,
-  });
-
-  try {
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: body,
-    );
-
-    if (response.statusCode == 200) {
-      // Move to the main screen regardless of the response content
-      Navigator.pushNamed(context, '/main', arguments: loginId);
-    } else {
-      // Display a generic error message if not 200
+    // Validate inputs
+    if (loginId.isEmpty || password.isEmpty) {
       setState(() {
-        _errorMessage = 'Server error. Please try again later.';
+        _errorMessage = 'Please enter both email and password';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final response = await _authApi.login(loginId, password);
+      
+      if (response != null) {
+        // If we reach here, login was successful
+        Navigator.pushNamed(context, '/main', arguments: loginId);
+      } else {
+        setState(() {
+          _errorMessage = 'Invalid credentials. Please try again.';
+        });
+      }
+    } catch (e) {
+      print('Login error: $e'); // For debugging
+      setState(() {
+        _errorMessage = e.toString().contains('Network error')
+            ? 'Please check your connection.'
+            : 'Login failed. Please try again.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
-  } catch (e) {
-    // Handle network or unexpected errors
-    setState(() {
-      _errorMessage = 'An error occurred. Please check your connection.';
-    });
-  } finally {
-    // Hide loading indicator
-    setState(() {
-      _isLoading = false;
-    });
   }
-}
 
 
   @override
@@ -143,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 width: screenWidth * 0.8,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _login,  // Disable button if loading
+                  onPressed: _isLoading ? null : _login,  
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding: const EdgeInsets.symmetric(vertical: 15),

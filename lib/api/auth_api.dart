@@ -8,7 +8,7 @@ class AuthApi {
   Future<dynamic> login(String email, String password) async {
     return await _apiService.postRequest(
       loginEndpoint,
-      {'email': email, 'password': password},
+      {'Email': email, 'Password': password},  // Updated to match expected format
     );
   }
 
