@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart'; 
 import 'package:http/http.dart' as http;
 import 'dart:convert';  
+import '../api/auth_api.dart';  
 
 class LoginPage extends StatefulWidget {
   @override
@@ -11,54 +12,46 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthApi _authApi = AuthApi();
   String _errorMessage = '';
   bool _isPasswordVisible = false;
   bool _isLoading = false; // Loading state
 
   // Method to handle login with API
   void _login() async {
-  final loginId = _loginController.text;
-  final password = _passwordController.text;
+    final email = _loginController.text;
+    final password = _passwordController.text;
 
-  setState(() {
-    _isLoading = true; // Show loading indicator
-    _errorMessage = ''; // Clear previous error message
-  });
-
-  const url = 'http://localhost:4000/api/login';
-  final body = jsonEncode({
-    'Email': loginId,
-    'Password': password,
-  });
-
-  try {
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: body,
-    );
-
-    if (response.statusCode == 200) {
-      // Move to the main screen regardless of the response content
-      Navigator.pushNamed(context, '/main', arguments: loginId);
-    } else {
-      // Display a generic error message if not 200
+    // Input validation
+    if (email.isEmpty || password.isEmpty) {
       setState(() {
-        _errorMessage = 'Server error. Please try again later.';
+        _errorMessage = 'Please enter both email and password';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true; // Show loading indicator
+      _errorMessage = ''; // Clear previous error message
+    });
+
+    try {
+      final response = await _authApi.login(email, password);
+      
+      // If we reach here, login was successful
+      Navigator.pushNamed(context, '/main', arguments: email);
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString().contains('Network error')
+            ? 'Please check your internet connection'
+            : 'Invalid email or password';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
       });
     }
-  } catch (e) {
-    // Handle network or unexpected errors
-    setState(() {
-      _errorMessage = 'An error occurred. Please check your connection.';
-    });
-  } finally {
-    // Hide loading indicator
-    setState(() {
-      _isLoading = false;
-    });
   }
-}
 
 
   @override
