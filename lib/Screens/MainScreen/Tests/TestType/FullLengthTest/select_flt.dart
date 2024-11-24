@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class SelectFLTScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
     final String username = args?['username'] ?? 'Unknown';
     final String testType = args?['testType'] ?? 'Unknown';
 
@@ -31,7 +32,7 @@ class SelectFLTScreen extends StatelessWidget {
                     label: 'Mock Full Length Test',
                     icon: Icons.quiz,
                     context: context,
-                    route: '/mockflttestinterface',
+                    route: '/testInterface',
                     username: username,
                     testType: testType,
                     flttype: 'mock',

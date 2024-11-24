@@ -21,7 +21,8 @@ class SelectCETyear extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
     final String username = args?['username'] ?? 'Unknown';
     final String testType = args?['testType'] ?? 'Unknown';
     final String flttype = args?['flttype'] ?? 'Unknown';
@@ -81,7 +82,7 @@ class SelectCETyear extends StatelessWidget {
         onPressed: () {
           Navigator.pushNamed(
             context,
-            '/mhtcettestinterface', // Assuming this is the next screen route
+            '/testInterface', // Assuming this is the next screen route
             arguments: {
               'username': username,
               'testType': testType,

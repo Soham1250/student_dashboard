@@ -19,31 +19,17 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> fetchUsername() async {
-    try {
-      // Call the API using ID 1 for testing purposes
-      final response = await _apiService.getRequest(getStudentByIdEndpoint('1'));
-      
-      if (response != null && response.containsKey('FirstName')) {
-        setState(() {
-          _username = response['FirstName']; // Extract only FirstName
-        });
-      } else {
-        setState(() {
-          _username = 'Student'; // Default value if FirstName is not found
-        });
-      }
-    } catch (error) {
-      setState(() {
-        _username = 'Student'; // Default in case of error
-      });
-    }
+    setState(() {
+      _username = 'Soham'; // Always set to Soham
+    });
   }
 
   void _navigateToProfile() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const ProfileScreen(studentId: '1'), // Using ID 1 for testing
+        builder: (context) =>
+            const ProfileScreen(studentId: '1'), // Using ID 1 for testing
       ),
     );
   }
@@ -52,7 +38,8 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Main Dashboard', style: TextStyle(fontSize: 24, color: Colors.white)),
+        title: const Text('Main Dashboard',
+            style: TextStyle(fontSize: 24, color: Colors.white)),
         backgroundColor: Colors.deepPurple,
         elevation: 0,
       ),
@@ -69,13 +56,17 @@ class _MainScreenState extends State<MainScreen> {
                     child: CircleAvatar(
                       radius: 40,
                       backgroundColor: Colors.deepPurple[100],
-                      child: const Icon(Icons.person, size: 40, color: Colors.deepPurple),
+                      child: const Icon(Icons.person,
+                          size: 40, color: Colors.deepPurple),
                     ),
                   ),
                   const SizedBox(width: 20),
                   Text(
                     'Hello, $_username',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 ],
               ),
@@ -86,12 +77,18 @@ class _MainScreenState extends State<MainScreen> {
                   crossAxisSpacing: 15,
                   mainAxisSpacing: 15,
                   children: [
-                    _buildGridButton('Tests', Icons.assignment, context, '/testSelection', Colors.orange),
-                    _buildGridButton('Performance', Icons.bar_chart, context, '/performance', Colors.green),
-                    _buildGridButton('Statistics', Icons.insert_chart, context, '/statistics', Colors.blue),
-                    _buildGridButton('Learn', Icons.school, context, '/learn', Colors.red),
-                    _buildGridButton('Feedback', Icons.feedback, context, '/feedback', Colors.purple),
-                    _buildGridButton('Grievances', Icons.report_problem, context, '/grievances', Colors.teal),
+                    _buildGridButton('Tests', Icons.assignment, context,
+                        '/testSelection', Colors.orange),
+                    _buildGridButton('Performance', Icons.bar_chart, context,
+                        '/performance', Colors.green),
+                    _buildGridButton('Statistics', Icons.insert_chart, context,
+                        '/statistics', Colors.blue),
+                    _buildGridButton(
+                        'Learn', Icons.school, context, '/learn', Colors.red),
+                    _buildGridButton('Feedback', Icons.feedback, context,
+                        '/feedback', Colors.purple),
+                    _buildGridButton('Grievances', Icons.report_problem,
+                        context, '/grievance', Colors.teal),
                   ],
                 ),
               ),
@@ -102,7 +99,8 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildGridButton(String label, IconData icon, BuildContext context, String route, Color color) {
+  Widget _buildGridButton(String label, IconData icon, BuildContext context,
+      String route, Color color) {
     return ElevatedButton(
       onPressed: () {
         Navigator.pushNamed(context, route, arguments: {'username': _username});

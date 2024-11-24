@@ -96,24 +96,23 @@ class StudentDashboardApp extends StatelessWidget {
 
           // Topic Wise
           '/topicWiseTest': (context) => TopicWiseTestScreen(),
-          '/physicsChapter': (context) => PhysicsChapterScreen(),
-          '/chemistryChapter': (context) => ChemistryChapterScreen(),
-          '/biologyChapter': (context) => BiologyChapterScreen(),
-          '/mathChapter': (context) => MathChapterScreen(),
-          '/selectTopicWiseDifficulty': (context) =>
-              SelectTopicWiseDifficultyScreen(),
+          '/physicsTopics': (context) => PhysicsChapterScreen(),
+          '/chemistryTopics': (context) => ChemistryChapterScreen(),
+          '/biologyTopics': (context) => BiologyChapterScreen(),
+          '/mathTopics': (context) => MathChapterScreen(),
+          '/selectDifficulty': (context) => SelectTopicWiseDifficultyScreen(),
 
           // Subject Wise
-          '/selectSubject': (context) => SubjectWiseTest(),
+          '/subjectWise': (context) => SubjectWiseTest(),
           '/selectSubjectWiseDifficulty': (context) =>
               SelectSubjectWiseDifficultyScreen(),
           '/selectSubjectWiseTest': (context) => SelectSubjectWiseTest(),
-          '/subjectWiseTestInterface': (context) => UniversalTestInterface(),
+          '/subjectwisetestinterface': (context) => UniversalTestInterface(),
 
           // Full Length Test
-          '/selectFLT': (context) => SelectFLTScreen(),
-          '/selectFLTTest': (context) => SelectFLTScreen(),
-          '/selectYear': (context) => SelectCETyear(),
+          '/fullSyllabus': (context) => SelectFLTScreen(),
+          '/selectFLTTest': (context) => SelectMockFltTest(),
+          '/selectcetyear': (context) => SelectCETyear(),
 
           // Performance and Analysis
           // '/testAnalysis': (context) => TestAnalysis(),
@@ -121,12 +120,12 @@ class StudentDashboardApp extends StatelessWidget {
 
           // Statistics
           '/statistics': (context) => StatisticsScreen(),
-          '/subjectReview': (context) => SubjectReviewScreen(),
+          '/subjectreview': (context) => SubjectReviewScreen(),
 
           // Learn
           '/learn': (context) => LearnScreen(),
-          '/learnSubject': (context) => LearnSubjectScreen(),
-          '/learnChapter': (context) => LearnChapterScreen(),
+          '/learnsubject': (context) => LearnSubjectScreen(),
+          '/learnchapter': (context) => LearnChapterScreen(),
 
           // Feedback
           '/feedback': (context) => FeedbackScreen(),
