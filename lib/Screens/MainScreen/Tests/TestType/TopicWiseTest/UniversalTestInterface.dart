@@ -16,7 +16,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
   int currentQuestionIndex = 0;
   late int totalTime; // Timer (in seconds)
   late Timer timer;
-  int remainingTime = 0;
+  int remainingTime = 00;
 
   late String username; // Extracted from arguments
   late String testType; // Extracted from arguments
@@ -36,8 +36,8 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
     // Extract arguments
     final Map<String, String> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, String>;
-    username = args['username']??"Unknown";
-    testType = args['testType']??"Unknown";
+    username = args['username'] ?? "Unknown";
+    testType = args['testType'] ?? "Unknown";
 
     // Set timer based on test type
     totalTime = testType == "Full-length" ? 180 * 60 : 40 * 60;
@@ -51,11 +51,9 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
   // Fetch questions from the API
   Future<void> fetchQuestions() async {
     try {
-      final response = await _apiService.postRequest(
-        addQuestionPaperEndpoint,
-        {"testType": testType}
-      );
-      
+      final response = await _apiService
+          .postRequest(addQuestionPaperEndpoint, {"testType": testType});
+
       setState(() {
         questions = (response['addedQuestions'] as List).map((q) {
           return {
@@ -222,8 +220,8 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
                           return ListTile(
                             leading: Radio<String>(
                               value: option,
-                              groupValue:
-                                  questions[currentQuestionIndex]['userAnswer'],
+                              groupValue: questions[currentQuestionIndex]
+                                  ['userAnswer'],
                               onChanged: selectAnswer,
                             ),
                             title: Html(data: option),
