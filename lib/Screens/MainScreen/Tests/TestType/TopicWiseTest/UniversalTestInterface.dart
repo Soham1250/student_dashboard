@@ -10,40 +10,58 @@ class UniversalTestInterface extends StatefulWidget {
   _UniversalTestInterfaceState createState() => _UniversalTestInterfaceState();
 }
 
-class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
-  late List<Map<String, dynamic>> questions; // Questions list
-  bool isLoading = true; // To show spinner while fetching questions
+class _UniversalTestInterfaceState extends State<UniversalTestInterface>
+    with SingleTickerProviderStateMixin {
+  late List<Map<String, dynamic>> questions;
+  bool isLoading = true;
   int currentQuestionIndex = 0;
-  late int totalTime; // Timer (in seconds)
+  late int totalTime;
   late Timer timer;
-  int remainingTime = 00;
+  int remainingTime = 0;
+  bool isSidebarVisible = true; // Control sidebar visibility
 
-  late String username; // Extracted from arguments
-  late String testType; // Extracted from arguments
-  final ApiService _apiService = ApiService(); // Initialize API service
+  late String username;
+  late String testType;
+  final ApiService _apiService = ApiService();
+
+  // Animation controller for sidebar
+  late AnimationController _animationController;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    questions = []; // Initialize empty list
-    // Timer setup will be initialized after arguments are loaded
+    questions = [];
+
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _animation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _animationController.forward();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Extract arguments
     final Map<String, String> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, String>;
     username = args['username'] ?? "Unknown";
     testType = args['testType'] ?? "Unknown";
 
-    // Set timer based on test type
     totalTime = testType == "Full-length" ? 180 * 60 : 40 * 60;
     remainingTime = totalTime;
 
-    // Fetch questions
     fetchQuestions();
     startTimer();
   }
@@ -174,14 +192,30 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
     // );
   }
 
+  // Toggle sidebar visibility
+  void toggleSidebar() {
+    setState(() {
+      isSidebarVisible = !isSidebarVisible;
+      if (isSidebarVisible) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+    });
+  }
+
   @override
   void dispose() {
-    timer.cancel(); // Dispose timer
+    timer.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final sidebarWidth = size.width * 0.7; // 70% of screen width
+
     return Scaffold(
       appBar: AppBar(
         title: Text("$testType Test"),
@@ -197,134 +231,236 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Row(
-              children: [
-                // Main question area
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          "Question ${currentQuestionIndex + 1}:",
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        Html(data: questions[currentQuestionIndex]['question']),
-                        const SizedBox(height: 20),
-                        ...questions[currentQuestionIndex]['options']
-                            .map<Widget>((option) {
-                          return ListTile(
-                            leading: Radio<String>(
-                              value: option,
-                              groupValue: questions[currentQuestionIndex]
-                                  ['userAnswer'],
-                              onChanged: selectAnswer,
-                            ),
-                            title: Html(data: option),
-                          );
-                        }).toList(),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Sidebar with toggle
-                Container(
-                  width: 250,
-                  color: Colors.grey[200],
-                  child: Column(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.toggle_on),
-                        onPressed: () {
-                          // Implement sidebar toggle
-                        },
+          : SafeArea(
+              child: Stack(
+                children: [
+                  // Main question area
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.only(
+                        left: 16.0,
+                        right: isSidebarVisible ? sidebarWidth + 16.0 : 16.0,
+                        top: 16.0,
+                        bottom: 16.0,
                       ),
-                      Expanded(
-                        child: GridView.builder(
-                          padding: const EdgeInsets.all(8.0),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 5,
-                            childAspectRatio: 1.0,
-                            crossAxisSpacing: 4.0,
-                            mainAxisSpacing: 4.0,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            "Question ${currentQuestionIndex + 1}:",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          itemCount: questions.length,
-                          itemBuilder: (context, index) {
-                            Color buttonColor;
-
-                            if (questions[index]['markedForReview'] == true) {
-                              if (questions[index]['userAnswer'] != null) {
-                                buttonColor = Colors.orange;
-                              } else {
-                                buttonColor = Colors.purple;
-                              }
-                            } else if (questions[index]['userAnswer'] != null) {
-                              buttonColor = Colors.green;
-                            } else {
-                              buttonColor = Colors.red;
-                            }
-
-                            return ElevatedButton(
-                              onPressed: () => navigateToQuestion(index),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: buttonColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                          const SizedBox(height: 10),
+                          Html(
+                            data: questions[currentQuestionIndex]['question'],
+                            style: {
+                              "body": Style(
+                                fontSize: FontSize(16.0),
+                                margin: Margins.zero,
+                                // padding: EdgeInsets.zero,
+                              ),
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          ...questions[currentQuestionIndex]['options']
+                              .map<Widget>((option) {
+                            return Card(
+                              elevation: 2,
+                              margin: const EdgeInsets.only(bottom: 8.0),
+                              child: ListTile(
+                                leading: Radio<String>(
+                                  value: option,
+                                  groupValue: questions[currentQuestionIndex]
+                                      ['userAnswer'],
+                                  onChanged: selectAnswer,
+                                ),
+                                title: Html(
+                                  data: option,
+                                  style: {
+                                    "body": Style(
+                                      fontSize: FontSize(14.0),
+                                      margin: Margins.zero,
+                                      // padding: EdgeInsets.zero,
+                                    ),
+                                  },
                                 ),
                               ),
-                              child: Text(
-                                '${index + 1}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
                             );
-                          },
+                          }).toList(),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Animated sidebar
+                  AnimatedBuilder(
+                    animation: _animation,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(
+                          size.width * (1 - _animation.value),
+                          0,
+                        ),
+                        child: child,
+                      );
+                    },
+                    child: Container(
+                      width: sidebarWidth,
+                      height: double.infinity,
+                      color: Colors.grey[200]!.withOpacity(0.95),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Questions',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    isSidebarVisible
+                                        ? Icons.chevron_right
+                                        : Icons.chevron_left,
+                                  ),
+                                  onPressed: toggleSidebar,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(8.0),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 4,
+                                childAspectRatio: 1.0,
+                                crossAxisSpacing: 4.0,
+                                mainAxisSpacing: 4.0,
+                              ),
+                              itemCount: questions.length,
+                              itemBuilder: (context, index) {
+                                Color buttonColor;
+
+                                if (questions[index]['markedForReview'] ==
+                                    true) {
+                                  buttonColor =
+                                      questions[index]['userAnswer'] != null
+                                          ? Colors.orange
+                                          : Colors.purple;
+                                } else {
+                                  buttonColor =
+                                      questions[index]['userAnswer'] != null
+                                          ? Colors.green
+                                          : Colors.red;
+                                }
+
+                                return ElevatedButton(
+                                  onPressed: () => navigateToQuestion(index),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: buttonColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Toggle button for smaller screens
+                  Positioned(
+                    right: 0,
+                    top: size.height * 0.5,
+                    child: AnimatedOpacity(
+                      opacity: isSidebarVisible ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            bottomLeft: Radius.circular(8),
+                          ),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.chevron_left),
+                          onPressed: toggleSidebar,
                         ),
                       ),
-                    ],
+                    ),
                   ),
+                ],
+              ),
+            ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          child: Wrap(
+            alignment: WrapAlignment.spaceEvenly,
+            spacing: 8.0,
+            children: [
+              ElevatedButton.icon(
+                onPressed: toggleMarkForReview,
+                icon: Icon(Icons.bookmark_border),
+                label: Text("Review"),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
                 ),
-              ],
-            ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ElevatedButton(
-              onPressed: toggleMarkForReview,
-              child: const Text("Mark for Review"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (currentQuestionIndex > 0) {
-                  setState(() {
-                    currentQuestionIndex--;
-                  });
-                }
-              },
-              child: const Text("Previous"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (currentQuestionIndex < questions.length - 1) {
-                  setState(() {
-                    currentQuestionIndex++;
-                  });
-                }
-              },
-              child: const Text("Next"),
-            ),
-            ElevatedButton(
-              onPressed: submitTest,
-              child: const Text("Submit"),
-            ),
-          ],
+              ),
+              ElevatedButton.icon(
+                onPressed: currentQuestionIndex > 0
+                    ? () => setState(() => currentQuestionIndex--)
+                    : null,
+                icon: Icon(Icons.arrow_back),
+                label: Text("Prev"),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: currentQuestionIndex < questions.length - 1
+                    ? () => setState(() => currentQuestionIndex++)
+                    : null,
+                icon: Icon(Icons.arrow_forward),
+                label: Text("Next"),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: submitTest,
+                icon: Icon(Icons.check_circle_outline),
+                label: Text("Submit"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
