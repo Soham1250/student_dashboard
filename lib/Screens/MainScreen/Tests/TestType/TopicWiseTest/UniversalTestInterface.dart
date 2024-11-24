@@ -385,6 +385,30 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
                               },
                             ),
                           ),
+                          const Divider(height: 1, color: Colors.grey),
+                          Container(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Question Status',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildLegendItem(Colors.red, 'Not Attempted'),
+                                _buildLegendItem(Colors.green, 'Answered'),
+                                _buildLegendItem(
+                                    Colors.purple, 'Marked for Review'),
+                                _buildLegendItem(Colors.orange,
+                                    'Marked for Review (Answered)'),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -462,6 +486,29 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
       ),
     );
   }
