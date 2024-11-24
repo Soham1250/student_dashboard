@@ -57,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
         elevation: 0,
       ),
       body: Container(
-        color: Colors.black87, // Dark background color
+        color: const Color.fromARGB(221, 40, 8, 26), // Dark background color
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

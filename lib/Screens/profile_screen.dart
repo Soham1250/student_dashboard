@@ -43,8 +43,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: MediaQuery.of(context).size.width * 0.8,
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -53,9 +60,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: Color.fromARGB(221, 40, 8, 26),
+                fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 4),
@@ -64,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Colors.black87,
+                color: Color.fromARGB(221, 40, 8, 26),
               ),
             ),
           ],
@@ -78,22 +86,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Profile',
           style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
+            color: Colors.white,
+            fontSize: 24,
             fontWeight: FontWeight.w500,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(221, 40, 8, 26), // Dark background color
         elevation: 0,
       ),
       body: Container(
-        color: Colors.white,
+        color:  Colors.deepPurple,
         child: FutureBuilder<StudentProfile>(
           future: _studentFuture,
           builder: (context, snapshot) {
@@ -154,19 +162,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.grey.shade300,
-                                  width: 1,
+                                  color: Colors.white24,
+                                  width: 2,
                                 ),
                               ),
                               child: CircleAvatar(
                                 radius: 50,
-                                backgroundColor: Colors.grey[100],
+                                backgroundColor: const Color.fromARGB(255, 230, 147, 192),
                                 child: Text(
                                   student.firstName[0] + student.lastName[0],
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600],
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -179,17 +187,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: const Color.fromARGB(255, 230, 147, 192),
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Colors.grey.shade300,
+                                      color: Colors.white24,
                                       width: 1,
                                     ),
                                   ),
                                   child: const Icon(
                                     Icons.camera_alt,
                                     size: 20,
-                                    color: Colors.black87,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -201,15 +209,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           'Camera',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: Colors.white70,
                           ),
                         ),
                         const SizedBox(height: 32),
-                        _buildTextField('Firstname', student.firstName),
-                        _buildTextField('Surname', student.lastName),
-                        _buildTextField('Email', student.email),
-                        _buildTextField('Phone', student.phoneNumber),
-                        _buildTextField('Class', student.currentClass),
+                        _buildTextField('Firstname:', student.firstName),
+                        _buildTextField('Surname:', student.lastName),
+                        _buildTextField('Email:', student.email),
+                        _buildTextField('Phone:', student.phoneNumber),
+                        _buildTextField('Class:', student.currentClass),
                       ],
                     ),
                   ),
@@ -223,10 +231,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onPressed: _handleEdit,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: Colors.deepPurple,
+                            backgroundColor: const Color.fromARGB(255, 56, 193, 79),
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(
+                                color: Color.fromARGB(0, 0, 0, 0)
+                              )
                             ),
                           ),
                           child: const Text(
@@ -234,7 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: Color.fromARGB(255, 255, 255, 255),
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -246,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onPressed: _handleLogout,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: Colors.red[600],
+                            backgroundColor: Colors.red[400],
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
