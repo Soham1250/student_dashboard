@@ -37,13 +37,30 @@ import 'Screens/register.dart';
 // Providers
 import 'providers/auth_provider.dart';
 
+// Services
+import 'services/auth_storage_service.dart';
+
 // Main function
-void main() {
-  runApp(const StudentDashboardApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Check for stored credentials
+  final authStorage = AuthStorageService();
+  bool isLoggedIn = false;
+
+  try {
+    isLoggedIn = await authStorage.validateStoredCredentials();
+  } catch (e) {
+    debugPrint('Error checking credentials: $e');
+  }
+
+  runApp(StudentDashboardApp(isLoggedIn: isLoggedIn));
 }
 
 class StudentDashboardApp extends StatelessWidget {
-  const StudentDashboardApp({super.key});
+  final bool isLoggedIn;
+
+  const StudentDashboardApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -69,59 +86,58 @@ class StudentDashboardApp extends StatelessWidget {
           // Other routes
           return null;
         },
-        initialRoute: '/',
+        initialRoute: isLoggedIn ? '/main' : '/',
         routes: {
           '/': (context) => LoginPage(),
+          '/main': (context) => MainScreen(),
           '/testSelection': (context) => TestSelectionScreen(),
           '/testInterface': (context) => UniversalTestInterface(),
           '/detailedanalysis': (context) => DetailedAnalysisScreen(),
 
           // Topic Wise
           '/topicWiseTest': (context) => TopicWiseTestScreen(),
-          '/physicsTopics': (context) => PhysicsChapterScreen(),
-          '/chemistryTopics': (context) => ChemistryChapterScreen(),
-          '/biologyTopics': (context) => BiologyChapterScreen(),
-          '/mathTopics': (context) => MathChapterScreen(),
-          '/selectDifficulty': (context) => SelectTopicWiseDifficultyScreen(),
-          '/selectTopicWiseTest': (context) => UniversalTestInterface(),
-          '/testanalysis': (context) => TestAnalysisScreen(),
+          '/physicsChapter': (context) => PhysicsChapterScreen(),
+          '/chemistryChapter': (context) => ChemistryChapterScreen(),
+          '/biologyChapter': (context) => BiologyChapterScreen(),
+          '/mathChapter': (context) => MathChapterScreen(),
+          '/selectTopicWiseDifficulty': (context) =>
+              SelectTopicWiseDifficultyScreen(),
 
           // Subject Wise
-          '/subjectWise': (context) => SubjectWiseTest(),
-          '/selectSubjectWiseDifficulty': (context) => SelectSubjectWiseDifficultyScreen(),
+          '/selectSubject': (context) => SubjectWiseTest(),
+          '/selectSubjectWiseDifficulty': (context) =>
+              SelectSubjectWiseDifficultyScreen(),
           '/selectSubjectWiseTest': (context) => SelectSubjectWiseTest(),
-          '/subjectwisetestinterface': (context) => SubjectWiseTestInterfaceScreen(),
+          '/subjectWiseTestInterface': (context) => UniversalTestInterface(),
 
           // Full Length Test
-          '/fullSyllabus': (context) => SelectFLTScreen(),
-          '/mockflt': (context) => SelectMockFltTest(),
-          '/mockflttestinterface': (context) => UniversalTestInterface(),
+          '/selectFLT': (context) => SelectFLTScreen(),
+          '/selectFLTTest': (context) => SelectFLTScreen(),
+          '/selectYear': (context) => SelectCETyear(),
 
-          // MHT CET
-          '/selectcetyear': (context) => SelectCETyear(),
-          '/mhtcettestinterface': (context) => UniversalTestInterface(),
-
-          // Performance Analysis
+          // Performance and Analysis
+          // '/testAnalysis': (context) => TestAnalysis(),
           '/performance': (context) => PerformanceScreen(),
 
           // Statistics
           '/statistics': (context) => StatisticsScreen(),
-          '/subjectreview': (context) => SubjectReviewScreen(),
+          '/subjectReview': (context) => SubjectReviewScreen(),
 
           // Learn
           '/learn': (context) => LearnScreen(),
-          '/learnsubject': (context) => LearnSubjectScreen(),
-          '/learnchapter': (context) => LearnChapterScreen(),
+          '/learnSubject': (context) => LearnSubjectScreen(),
+          '/learnChapter': (context) => LearnChapterScreen(),
 
           // Feedback
           '/feedback': (context) => FeedbackScreen(),
 
           // Grievances
-          '/grievances': (context) => GrievancePortal(),
-          '/managegrievance': (context) => ManageGrievanceScreen(),
-          '/newgrievance': (context) => NewGrievanceScreen(),
+          '/grievance': (context) => GrievancePortal(),
+          '/manageGrievance': (context) => ManageGrievanceScreen(),
+          '/newGrievance': (context) => NewGrievanceScreen(),
 
-          '/forgotpassword': (context) => ForgotPasswordPage(),
+          // Auth
+          // '/forgotPassword': (context) => ForgotPasswordScreen(),
           '/register': (context) => RegisterPage(),
         },
       ),

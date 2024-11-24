@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart'; 
 import '../api/api_service.dart';
+import '../services/auth_storage_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -14,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
   final ApiService _apiService = ApiService();
+  final AuthStorageService _authStorage = AuthStorageService();
 
   // Method to handle login with API
   void _login() async {
@@ -27,7 +29,9 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await _apiService.login(loginId, password);
-      Navigator.pushNamed(context, '/main', arguments: loginId);
+      // Store credentials after successful login
+      await _authStorage.saveCredentials(loginId, password);
+      Navigator.pushReplacementNamed(context, '/main', arguments: loginId);
     } catch (e) {
       setState(() {
         _errorMessage = 'Server error. Please try again later.';

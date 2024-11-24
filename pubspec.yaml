@@ -49,7 +49,7 @@ dependencies:
   json_serializable: ^6.5.4
 
   # SharedPreferences for saving responses locally
-  shared_preferences: ^2.1.0
+  shared_preferences: ^2.2.2
 
   # Icons (if additional Cupertino-style icons are needed)
   cupertino_icons: ^1.0.8
