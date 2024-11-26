@@ -4,25 +4,32 @@ import 'package:fl_chart/fl_chart.dart';
 class TestAnalysisScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final analysisData = args['analysisData'] as Map<String, dynamic>;
     final username = args['username'] ?? "Unknown" as String;
     final testType = args['testType'] ?? "Unknown" as String;
     final questions = args['questions'] as List<Map<String, dynamic>>;
 
     // Extract data from analysisData
-    final correctAnswers = analysisData['correctAnswers'] as List<Map<String, dynamic>>;
-    final incorrectAnswers = analysisData['incorrectAnswers'] as List<Map<String, dynamic>>;
-    final markedReviewUnanswered = analysisData['markedReviewUnanswered'] as List<Map<String, dynamic>>;
-    final markedReviewAnswered = analysisData['markedReviewAnswered'] as List<Map<String, dynamic>>;
+    final correctAnswers =
+        analysisData['correctAnswers'] as List<Map<String, dynamic>>;
+    final incorrectAnswers =
+        analysisData['incorrectAnswers'] as List<Map<String, dynamic>>;
+    final markedReviewUnanswered =
+        analysisData['markedReviewUnanswered'] as List<Map<String, dynamic>>;
+    final markedReviewAnswered =
+        analysisData['markedReviewAnswered'] as List<Map<String, dynamic>>;
     final timeAnalysis = analysisData['timeAnalysis'] as Map<String, dynamic>;
-    final confidenceAnalysis = analysisData['confidenceAnalysis'] as Map<int, double>;
 
     // Calculate statistics
     int totalQuestions = questions.length;
-    double accuracy = totalQuestions > 0 ? (correctAnswers.length / totalQuestions) * 100 : 0;
+    int totalAnswered = correctAnswers.length + incorrectAnswers.length;
+    double accuracy =
+        totalAnswered > 0 ? (correctAnswers.length / totalAnswered) * 100 : 0;
     int totalTime = timeAnalysis['totalTime'] as int;
-    double avgTimePerQuestion = totalTime / totalQuestions;
+    double avgTimePerQuestion =
+        totalQuestions > 0 ? totalTime / totalQuestions : 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -37,7 +44,7 @@ class TestAnalysisScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     // Performance Overview Cards
-                    Container(
+                    SizedBox(
                       height: 160,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
@@ -51,7 +58,7 @@ class TestAnalysisScreen extends StatelessWidget {
                           ),
                           _buildStatCard(
                             'Correct',
-                            '${correctAnswers.length}/$totalQuestions',
+                            '${correctAnswers.length}/$totalAnswered',
                             Icons.check_circle,
                             Colors.green,
                           ),
@@ -74,7 +81,7 @@ class TestAnalysisScreen extends StatelessWidget {
                     // Performance Chart
                     Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Container(
+                      child: SizedBox(
                         height: 200,
                         child: Card(
                           elevation: 4,
@@ -90,22 +97,26 @@ class TestAnalysisScreen extends StatelessWidget {
                                     value: correctAnswers.length.toDouble(),
                                     title: 'Correct',
                                     radius: 50,
-                                    titleStyle: TextStyle(fontSize: 12, color: Colors.white),
+                                    titleStyle: TextStyle(
+                                        fontSize: 12, color: Colors.white),
                                   ),
                                   PieChartSectionData(
                                     color: Colors.red,
                                     value: incorrectAnswers.length.toDouble(),
                                     title: 'Incorrect',
                                     radius: 50,
-                                    titleStyle: TextStyle(fontSize: 12, color: Colors.white),
+                                    titleStyle: TextStyle(
+                                        fontSize: 12, color: Colors.white),
                                   ),
                                   if (markedReviewUnanswered.isNotEmpty)
                                     PieChartSectionData(
                                       color: Colors.grey,
-                                      value: markedReviewUnanswered.length.toDouble(),
+                                      value: markedReviewUnanswered.length
+                                          .toDouble(),
                                       title: 'Unanswered',
                                       radius: 50,
-                                      titleStyle: TextStyle(fontSize: 12, color: Colors.white),
+                                      titleStyle: TextStyle(
+                                          fontSize: 12, color: Colors.white),
                                     ),
                                 ],
                               ),
@@ -123,10 +134,11 @@ class TestAnalysisScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Question Review',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 16),
-                          Container(
+                          SizedBox(
                             height: 280,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
@@ -135,7 +147,7 @@ class TestAnalysisScreen extends StatelessWidget {
                                 final question = questions[index];
                                 return _buildQuestionCard(
                                   question,
-                                  question['userAnswer'] == question['correctAnswer'],
+                                  question['isCorrect'] as bool,
                                   index + 1,
                                 );
                               },
@@ -168,7 +180,8 @@ class TestAnalysisScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       width: 150,
       margin: EdgeInsets.only(right: 16),
@@ -212,15 +225,20 @@ class TestAnalysisScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuestionCard(Map<String, dynamic> question, bool isCorrect, int questionNumber) {
+  Widget _buildQuestionCard(
+      Map<String, dynamic> question, bool isCorrect, int questionNumber) {
     final options = question['options'] as List<dynamic>;
-    
+    final confidence = question['confidence'] as double?;
+    final userAnswer = question['userAnswer'] as String?;
+    final correctAnswer = question['correctAnswer'] as String;
+    final isAnswerCorrect = question['isCorrect'] as bool;
+
     return Container(
       width: 300,
       margin: EdgeInsets.only(right: 16),
       child: Card(
         elevation: 4,
-        color: isCorrect ? Colors.green[50] : Colors.red[50],
+        color: isAnswerCorrect ? Colors.green[50] : Colors.red[50],
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -251,21 +269,23 @@ class TestAnalysisScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 8),
-              Container(
+              SizedBox(
                 height: 100,
                 child: ListView.builder(
                   itemCount: options.length,
                   itemBuilder: (context, index) {
                     final option = options[index];
-                    final isUserAnswer = question['userAnswer'] == option;
-                    final isCorrectAnswer = question['correctAnswer'] == option;
-                    
+                    final isUserAnswer = userAnswer == option;
+                    final isCorrectAnswer = correctAnswer == option;
+
                     return Container(
                       margin: EdgeInsets.only(bottom: 4),
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: isUserAnswer
-                            ? (isCorrectAnswer ? Colors.green[100] : Colors.red[100])
+                            ? (isAnswerCorrect
+                                ? Colors.green[100]
+                                : Colors.red[100])
                             : isCorrectAnswer
                                 ? Colors.green[100]
                                 : Colors.grey[100],
@@ -278,7 +298,9 @@ class TestAnalysisScreen extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: isUserAnswer
-                                  ? (isCorrectAnswer ? Colors.green[900] : Colors.red[900])
+                                  ? (isAnswerCorrect
+                                      ? Colors.green[900]
+                                      : Colors.red[900])
                                   : isCorrectAnswer
                                       ? Colors.green[900]
                                       : Colors.grey[900],
@@ -291,7 +313,9 @@ class TestAnalysisScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isUserAnswer
-                                    ? (isCorrectAnswer ? Colors.green[900] : Colors.red[900])
+                                    ? (isAnswerCorrect
+                                        ? Colors.green[900]
+                                        : Colors.red[900])
                                     : isCorrectAnswer
                                         ? Colors.green[900]
                                         : Colors.grey[900],
@@ -310,18 +334,21 @@ class TestAnalysisScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Time: ${((question['timeSpent'] as int) / 60).toStringAsFixed(1)} min',
+                    'Time: ${((question['timeSpent'] as int)).toStringAsFixed(1)} sec',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
                     ),
                   ),
-                  if (question['confidence'] != null)
+                  if (confidence != null)
                     Text(
-                      'Confidence: ${(question['confidence'] as double).toStringAsFixed(0)}%',
+                      'Confidence: ${confidence.toStringAsFixed(0)}%',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: isAnswerCorrect
+                            ? Colors.green[700]
+                            : Colors.red[700],
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                 ],

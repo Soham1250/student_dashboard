@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:async'; // For Timer
-// import 'dart:convert'; // For JSON parsing
+import 'dart:math'; // For min/max functions
 import '../../../../../api/api_service.dart';
 import '../../../../../api/endpoints.dart';
 
@@ -134,31 +134,34 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
     setState(() {
       questions[currentQuestionIndex]['markedForReview'] =
           !questions[currentQuestionIndex]['markedForReview'];
+      
+      // Update confidence after marking for review
+      updateConfidence();
     });
   }
 
   // Select an answer
   void selectAnswer(String? selectedAnswer) {
-    if (selectedAnswer == null) return;
-
-    setState(() {
-      var question = questions[currentQuestionIndex];
-
-      // Update answer history and confidence
-      if (question['userAnswer'] != selectedAnswer) {
-        (question['answerHistory'] as List<String>).add(selectedAnswer);
-
-        // Update confidence only if answer is changing
-        if ((question['answerHistory'] as List<String>).length > 1) {
-          question['confidence'] = (question['confidence'] as double) / 2;
-          if ((question['confidence'] as double) < 10) {
-            question['confidence'] = -1.0; // Indicates "poor confidence"
-          }
+    if (selectedAnswer != null) {
+      setState(() {
+        // Update time spent
+        if (currentQuestionStartTime != null) {
+          final timeSpent =
+              DateTime.now().difference(currentQuestionStartTime!).inSeconds;
+          questions[currentQuestionIndex]['timeSpent'] =
+              (questions[currentQuestionIndex]['timeSpent'] as int) + timeSpent;
         }
-      }
+        currentQuestionStartTime = DateTime.now();
 
-      question['userAnswer'] = selectedAnswer;
-    });
+        // Update answer and history
+        questions[currentQuestionIndex]['userAnswer'] = selectedAnswer;
+        (questions[currentQuestionIndex]['answerHistory'] as List<String>)
+            .add(selectedAnswer);
+        
+        // Update confidence after answer selection
+        updateConfidence();
+      });
+    }
   }
 
   // Navigate to specific question
@@ -209,6 +212,28 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
     );
   }
 
+  // Helper function to convert HTML to plain text
+  String convertHtmlToPlainText(String? htmlString) {
+    if (htmlString == null) return '';
+    
+    // Remove HTML tags
+    String plainText = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
+    
+    // Decode HTML entities
+    plainText = plainText
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'");
+    
+    // Remove extra whitespace
+    plainText = plainText.replaceAll(RegExp(r'\s+'), ' ').trim();
+    
+    return plainText;
+  }
+
   // Final submission
   void _finalSubmit() {
     // Calculate time for last question
@@ -219,7 +244,35 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
           (questions[currentQuestionIndex]['timeSpent'] as int) + timeSpent;
     }
 
-    // Prepare analysis data with proper typing
+    // Process questions for analysis
+    final processedQuestions = questions.map((q) {
+      final plainUserAnswer = convertHtmlToPlainText(q['userAnswer'] as String?);
+      final plainCorrectAnswer = convertHtmlToPlainText(q['correctAnswer'] as String);
+      final plainOptions = (q['options'] as List<dynamic>)
+          .map((option) => convertHtmlToPlainText(option.toString()))
+          .toList();
+      
+      // Determine if answer is correct
+      final isCorrect = plainUserAnswer != null && 
+                       plainUserAnswer.isNotEmpty && 
+                       plainUserAnswer == plainCorrectAnswer;
+
+      return {
+        'question': convertHtmlToPlainText(q['question'] as String),
+        'options': plainOptions,
+        'userAnswer': plainUserAnswer,
+        'correctAnswer': plainCorrectAnswer,
+        'markedForReview': q['markedForReview'] as bool,
+        'timeSpent': q['timeSpent'] as int,
+        'confidence': q['confidence'] as double,
+        'answerHistory': (q['answerHistory'] as List<String>)
+            .map((answer) => convertHtmlToPlainText(answer))
+            .toList(),
+        'isCorrect': isCorrect,
+      };
+    }).toList();
+
+    // Prepare analysis data
     final Map<String, dynamic> analysisData = {
       'correctAnswers': <Map<String, dynamic>>[],
       'incorrectAnswers': <Map<String, dynamic>>[],
@@ -232,49 +285,39 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
       'confidenceAnalysis': <int, double>{},
     };
 
-    // Process each question
-    for (var i = 0; i < questions.length; i++) {
-      final q = questions[i];
-      final Map<String, dynamic> questionData = {
-        'question': q['question'] as String,
-        'userAnswer': q['userAnswer'] as String?,
-        'correctAnswer': q['correctAnswer'] as String,
-        'timeSpent': q['timeSpent'] as int,
-        'confidence': q['confidence'] as double,
-        'answerHistory': q['answerHistory'] as List<String>,
-      };
-
-      // Add to appropriate category with proper type casting
+    // Categorize questions
+    for (var i = 0; i < processedQuestions.length; i++) {
+      final q = processedQuestions[i];
+      
       if (q['markedForReview'] as bool) {
-        if (q['userAnswer'] == null) {
-          (analysisData['markedReviewUnanswered'] as List<Map<String, dynamic>>)
-              .add(questionData);
+        if (q['userAnswer'] == null || (q['userAnswer'] as String).isEmpty) {
+          analysisData['markedReviewUnanswered'].add(q);
         } else {
-          (analysisData['markedReviewAnswered'] as List<Map<String, dynamic>>)
-              .add(questionData);
+          analysisData['markedReviewAnswered'].add(q);
+          if (q['isCorrect'] as bool) {
+            analysisData['correctAnswers'].add(q);
+          } else {
+            analysisData['incorrectAnswers'].add(q);
+          }
         }
-      } else if (q['userAnswer'] != null) {
-        if (q['userAnswer'] == q['correctAnswer']) {
-          (analysisData['correctAnswers'] as List<Map<String, dynamic>>)
-              .add(questionData);
+      } else if (q['userAnswer'] != null && (q['userAnswer'] as String).isNotEmpty) {
+        if (q['isCorrect'] as bool) {
+          analysisData['correctAnswers'].add(q);
         } else {
-          (analysisData['incorrectAnswers'] as List<Map<String, dynamic>>)
-              .add(questionData);
+          analysisData['incorrectAnswers'].add(q);
         }
+      } else {
+        analysisData['incorrectAnswers'].add(q);
       }
 
-      // Add time analysis
-      (analysisData['timeAnalysis']['perQuestion'] as Map<int, int>)[i] =
-          q['timeSpent'] as int;
-
-      // Add confidence if question was answered correctly
-      if (q['userAnswer'] == q['correctAnswer']) {
-        (analysisData['confidenceAnalysis'] as Map<int, double>)[i] =
-            q['confidence'] as double;
+      // Record time and confidence
+      analysisData['timeAnalysis']['perQuestion'][i] = q['timeSpent'] as int;
+      if (q['isCorrect'] as bool) {
+        analysisData['confidenceAnalysis'][i] = q['confidence'] as double;
       }
     }
 
-    // Navigate to analysis screen with data
+    // Navigate to analysis screen
     Navigator.pushReplacementNamed(
       context,
       '/testAnalysis',
@@ -282,18 +325,43 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
         'analysisData': analysisData,
         'username': username,
         'testType': testType,
-        'questions': questions.map((q) => {
-          'question': q['question'],
-          'options': q['options'],
-          'userAnswer': q['userAnswer'],
-          'correctAnswer': q['correctAnswer'],
-          'markedForReview': q['markedForReview'],
-          'timeSpent': q['timeSpent'],
-          'confidence': q['confidence'],
-          'answerHistory': q['answerHistory'],
-        }).toList(),
+        'questions': processedQuestions,
       },
     );
+  }
+
+  // Calculate confidence based on time spent, answer changes, and review status
+  double calculateConfidence(Map<String, dynamic> question) {
+    double confidence = 100.0; // Start with 100%
+
+    // Time factor: Reduce confidence if took too long
+    int timeSpent = question['timeSpent'] as int;
+    if (timeSpent > 120) { // If more than 2 minutes
+      confidence -= min((timeSpent - 120) / 6, 30.0); // Reduce up to 30%
+    }
+
+    // Answer changes factor: Each change reduces confidence
+    List<String> answerHistory = question['answerHistory'] as List<String>;
+    if (answerHistory.length > 1) {
+      confidence -= min(answerHistory.length * 10, 40.0); // Reduce 10% per change, up to 40%
+    }
+
+    // Marked for review factor: Reduce confidence if marked
+    if (question['markedForReview'] as bool) {
+      confidence -= 20.0; // Reduce by 20%
+    }
+
+    return max(confidence, 0.0); // Ensure confidence doesn't go below 0
+  }
+
+  // Update confidence for current question
+  void updateConfidence() {
+    if (currentQuestionIndex >= 0 && currentQuestionIndex < questions.length) {
+      setState(() {
+        questions[currentQuestionIndex]['confidence'] = 
+            calculateConfidence(questions[currentQuestionIndex]);
+      });
+    }
   }
 
   // Toggle sidebar visibility
