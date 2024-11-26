@@ -15,7 +15,6 @@ import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/select_topicwise_difficu
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subject.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subjectwise_difficulty.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subjectwise_test.dart';
-import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/subjectwise_test_interface.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/select_flt.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/Mock/select_flt_test.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/MHT CET/select_year.dart';
@@ -115,7 +114,7 @@ class StudentDashboardApp extends StatelessWidget {
           '/selectcetyear': (context) => SelectCETyear(),
 
           // Performance and Analysis
-          // '/testAnalysis': (context) => TestAnalysis(),
+          '/testAnalysis': (context) => TestAnalysisScreen(),
           '/performance': (context) => PerformanceScreen(),
 
           // Statistics

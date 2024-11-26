@@ -1,112 +1,333 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class TestAnalysisScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Get arguments passed from TestInterfaceScreen
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final List<Map<String, dynamic>> questions = args['questions'];
+    final analysisData = args['analysisData'] as Map<String, dynamic>;
+    final username = args['username'] ?? "Unknown" as String;
+    final testType = args['testType'] ?? "Unknown" as String;
+    final questions = args['questions'] as List<Map<String, dynamic>>;
+
+    // Extract data from analysisData
+    final correctAnswers = analysisData['correctAnswers'] as List<Map<String, dynamic>>;
+    final incorrectAnswers = analysisData['incorrectAnswers'] as List<Map<String, dynamic>>;
+    final markedReviewUnanswered = analysisData['markedReviewUnanswered'] as List<Map<String, dynamic>>;
+    final markedReviewAnswered = analysisData['markedReviewAnswered'] as List<Map<String, dynamic>>;
+    final timeAnalysis = analysisData['timeAnalysis'] as Map<String, dynamic>;
+    final confidenceAnalysis = analysisData['confidenceAnalysis'] as Map<int, double>;
 
     // Calculate statistics
     int totalQuestions = questions.length;
-    int correctAnswers = questions.where((q) => q['userAnswer'] == q['correctAnswer']).length;
-
-    double accuracy = (correctAnswers / totalQuestions) * 100;
+    double accuracy = totalQuestions > 0 ? (correctAnswers.length / totalQuestions) * 100 : 0;
+    int totalTime = timeAnalysis['totalTime'] as int;
+    double avgTimePerQuestion = totalTime / totalQuestions;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Test Analysis'),
+        title: Text('$testType Analysis'),
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SafeArea(
         child: Column(
           children: [
-            // Accuracy Score Display
-            Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+            Expanded(
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Text(
-                      'Accuracy: ${(accuracy).toStringAsFixed(2)}%',
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    // Performance Overview Cards
+                    Container(
+                      height: 160,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.all(16.0),
+                        children: [
+                          _buildStatCard(
+                            'Accuracy',
+                            '${accuracy.toStringAsFixed(1)}%',
+                            Icons.analytics,
+                            Colors.blue,
+                          ),
+                          _buildStatCard(
+                            'Correct',
+                            '${correctAnswers.length}/$totalQuestions',
+                            Icons.check_circle,
+                            Colors.green,
+                          ),
+                          _buildStatCard(
+                            'Incorrect',
+                            '${incorrectAnswers.length}',
+                            Icons.cancel,
+                            Colors.red,
+                          ),
+                          _buildStatCard(
+                            'Avg. Time',
+                            '${(avgTimePerQuestion / 60).toStringAsFixed(1)} min',
+                            Icons.timer,
+                            Colors.orange,
+                          ),
+                        ],
+                      ),
                     ),
-                    Text(
-                      'Correct: $correctAnswers / $totalQuestions',
-                      style: const TextStyle(fontSize: 18, color: Colors.green),
+
+                    // Performance Chart
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        height: 200,
+                        child: Card(
+                          elevation: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: PieChart(
+                              PieChartData(
+                                sectionsSpace: 0,
+                                centerSpaceRadius: 40,
+                                sections: [
+                                  PieChartSectionData(
+                                    color: Colors.green,
+                                    value: correctAnswers.length.toDouble(),
+                                    title: 'Correct',
+                                    radius: 50,
+                                    titleStyle: TextStyle(fontSize: 12, color: Colors.white),
+                                  ),
+                                  PieChartSectionData(
+                                    color: Colors.red,
+                                    value: incorrectAnswers.length.toDouble(),
+                                    title: 'Incorrect',
+                                    radius: 50,
+                                    titleStyle: TextStyle(fontSize: 12, color: Colors.white),
+                                  ),
+                                  if (markedReviewUnanswered.isNotEmpty)
+                                    PieChartSectionData(
+                                      color: Colors.grey,
+                                      value: markedReviewUnanswered.length.toDouble(),
+                                      title: 'Unanswered',
+                                      radius: 50,
+                                      titleStyle: TextStyle(fontSize: 12, color: Colors.white),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
 
-            // List of Question Cards
-            Expanded(
-              child: ListView.builder(
-                itemCount: questions.length,
-                itemBuilder: (context, index) {
-                  final question = questions[index];
-                  bool isCorrect = question['userAnswer'] == question['correctAnswer'];
-
-                  return Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    color: isCorrect ? Colors.green[50] : Colors.red[50],
-                    child: Padding(
+                    // Question Review Section
+                    Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Question Text
                           Text(
-                            'Q${index + 1}: ${question['question']}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                            'Question Review',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            height: 280,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: questions.length,
+                              itemBuilder: (context, index) {
+                                final question = questions[index];
+                                return _buildQuestionCard(
+                                  question,
+                                  question['userAnswer'] == question['correctAnswer'],
+                                  index + 1,
+                                );
+                              },
                             ),
                           ),
-                          const SizedBox(height: 10),
-
-                          // User's Answer
-                          Text(
-                            'Your Answer: ${question['userAnswer'] ?? 'Not Answered'}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: isCorrect ? Colors.green : Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-
-                          // Correct Answer
-                          if (!isCorrect)
-                            Text(
-                              'Correct Answer: ${question['correctAnswer']}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                         ],
                       ),
                     ),
-                  );
-                },
+                    // Add bottom padding to prevent overlap with button
+                    SizedBox(height: 80),
+                  ],
+                ),
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: ElevatedButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          child: const Text('Back to Dashboard'),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('Back to Dashboard'),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      width: 150,
+      margin: EdgeInsets.only(right: 16),
+      child: Card(
+        elevation: 4,
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          constraints: BoxConstraints(minHeight: 120),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 28),
+              SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionCard(Map<String, dynamic> question, bool isCorrect, int questionNumber) {
+    final options = question['options'] as List<dynamic>;
+    
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(right: 16),
+      child: Card(
+        elevation: 4,
+        color: isCorrect ? Colors.green[50] : Colors.red[50],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Question $questionNumber',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (question['markedForReview'] as bool)
+                    Icon(Icons.bookmark, color: Colors.blue),
+                ],
+              ),
+              Divider(),
+              Flexible(
+                child: Text(
+                  question['question'] as String,
+                  style: TextStyle(fontSize: 14),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(height: 8),
+              Container(
+                height: 100,
+                child: ListView.builder(
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final option = options[index];
+                    final isUserAnswer = question['userAnswer'] == option;
+                    final isCorrectAnswer = question['correctAnswer'] == option;
+                    
+                    return Container(
+                      margin: EdgeInsets.only(bottom: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isUserAnswer
+                            ? (isCorrectAnswer ? Colors.green[100] : Colors.red[100])
+                            : isCorrectAnswer
+                                ? Colors.green[100]
+                                : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            String.fromCharCode(65 + index), // A, B, C, D
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isUserAnswer
+                                  ? (isCorrectAnswer ? Colors.green[900] : Colors.red[900])
+                                  : isCorrectAnswer
+                                      ? Colors.green[900]
+                                      : Colors.grey[900],
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              option,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isUserAnswer
+                                    ? (isCorrectAnswer ? Colors.green[900] : Colors.red[900])
+                                    : isCorrectAnswer
+                                        ? Colors.green[900]
+                                        : Colors.grey[900],
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Time: ${((question['timeSpent'] as int) / 60).toStringAsFixed(1)} min',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  if (question['confidence'] != null)
+                    Text(
+                      'Confidence: ${(question['confidence'] as double).toStringAsFixed(0)}%',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

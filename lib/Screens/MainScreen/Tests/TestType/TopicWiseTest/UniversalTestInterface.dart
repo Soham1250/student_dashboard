@@ -18,7 +18,8 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   late int totalTime;
   late Timer timer;
   int remainingTime = 0;
-  bool isSidebarVisible = true; // Control sidebar visibility
+  bool isSidebarVisible = false; // Start with sidebar closed
+  DateTime? currentQuestionStartTime;
 
   late String username;
   late String testType;
@@ -32,6 +33,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   void initState() {
     super.initState();
     questions = [];
+    currentQuestionStartTime = DateTime.now();
 
     // Initialize animation controller
     _animationController = AnimationController(
@@ -47,7 +49,9 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
       curve: Curves.easeInOut,
     ));
 
-    _animationController.forward();
+    if (!isSidebarVisible) {
+      _animationController.reverse();
+    }
   }
 
   @override
@@ -72,16 +76,28 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
       final response = await _apiService
           .postRequest(addQuestionPaperEndpoint, {"testType": testType});
 
+      if (response['addedQuestions'] == null) {
+        throw Exception('No questions received from API');
+      }
+
       setState(() {
-        questions = (response['addedQuestions'] as List).map((q) {
-          return {
-            'question': q['Question'],
-            'options': [q['OptionA'], q['OptionB'], q['OptionC'], q['OptionD']],
-            'correctAnswer': q['CorrectOption'],
-            'userAnswer': null,
-            'markedForReview': false,
-          };
-        }).toList();
+        questions = List<Map<String, dynamic>>.from(
+          (response['addedQuestions'] as List).map((q) => {
+                'question': q['Question'] as String,
+                'options': <String>[
+                  q['OptionA'] as String,
+                  q['OptionB'] as String,
+                  q['OptionC'] as String,
+                  q['OptionD'] as String,
+                ],
+                'correctAnswer': q['CorrectOption'] as String,
+                'userAnswer': null,
+                'markedForReview': false,
+                'answerHistory': <String>[],
+                'confidence': 100.0,
+                'timeSpent': 0,
+              }),
+        );
         isLoading = false;
       });
     } catch (e) {
@@ -123,15 +139,41 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
 
   // Select an answer
   void selectAnswer(String? selectedAnswer) {
+    if (selectedAnswer == null) return;
+
     setState(() {
-      questions[currentQuestionIndex]['userAnswer'] = selectedAnswer;
+      var question = questions[currentQuestionIndex];
+
+      // Update answer history and confidence
+      if (question['userAnswer'] != selectedAnswer) {
+        (question['answerHistory'] as List<String>).add(selectedAnswer);
+
+        // Update confidence only if answer is changing
+        if ((question['answerHistory'] as List<String>).length > 1) {
+          question['confidence'] = (question['confidence'] as double) / 2;
+          if ((question['confidence'] as double) < 10) {
+            question['confidence'] = -1.0; // Indicates "poor confidence"
+          }
+        }
+      }
+
+      question['userAnswer'] = selectedAnswer;
     });
   }
 
   // Navigate to specific question
   void navigateToQuestion(int index) {
+    // Calculate time spent on current question
+    if (currentQuestionStartTime != null) {
+      final timeSpent =
+          DateTime.now().difference(currentQuestionStartTime!).inSeconds;
+      questions[currentQuestionIndex]['timeSpent'] =
+          (questions[currentQuestionIndex]['timeSpent'] as int) + timeSpent;
+    }
+
     setState(() {
       currentQuestionIndex = index;
+      currentQuestionStartTime = DateTime.now();
     });
   }
 
@@ -169,27 +211,89 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
 
   // Final submission
   void _finalSubmit() {
-    final responses = questions.map((q) {
-      return {
-        'QuestionID': q['question'], // Assuming QuestionID is stored
-        'UserAnswer': q['userAnswer'],
-        'MarkedForReview': q['markedForReview'],
-      };
-    }).toList();
+    // Calculate time for last question
+    if (currentQuestionStartTime != null) {
+      final timeSpent =
+          DateTime.now().difference(currentQuestionStartTime!).inSeconds;
+      questions[currentQuestionIndex]['timeSpent'] =
+          (questions[currentQuestionIndex]['timeSpent'] as int) + timeSpent;
+    }
 
-    final submissionData = {
-      'username': username,
-      'testType': testType,
-      'responses': responses,
-      'timeSpent': totalTime - remainingTime,
+    // Prepare analysis data with proper typing
+    final Map<String, dynamic> analysisData = {
+      'correctAnswers': <Map<String, dynamic>>[],
+      'incorrectAnswers': <Map<String, dynamic>>[],
+      'markedReviewUnanswered': <Map<String, dynamic>>[],
+      'markedReviewAnswered': <Map<String, dynamic>>[],
+      'timeAnalysis': {
+        'perQuestion': <int, int>{},
+        'totalTime': totalTime - remainingTime,
+      },
+      'confidenceAnalysis': <int, double>{},
     };
 
-    print("Submitting test: $submissionData");
-    // Here, you can send `submissionData` to the backend
-    // Navigator.pushReplacement(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => TestAnalysisScreen()),
-    // );
+    // Process each question
+    for (var i = 0; i < questions.length; i++) {
+      final q = questions[i];
+      final Map<String, dynamic> questionData = {
+        'question': q['question'] as String,
+        'userAnswer': q['userAnswer'] as String?,
+        'correctAnswer': q['correctAnswer'] as String,
+        'timeSpent': q['timeSpent'] as int,
+        'confidence': q['confidence'] as double,
+        'answerHistory': q['answerHistory'] as List<String>,
+      };
+
+      // Add to appropriate category with proper type casting
+      if (q['markedForReview'] as bool) {
+        if (q['userAnswer'] == null) {
+          (analysisData['markedReviewUnanswered'] as List<Map<String, dynamic>>)
+              .add(questionData);
+        } else {
+          (analysisData['markedReviewAnswered'] as List<Map<String, dynamic>>)
+              .add(questionData);
+        }
+      } else if (q['userAnswer'] != null) {
+        if (q['userAnswer'] == q['correctAnswer']) {
+          (analysisData['correctAnswers'] as List<Map<String, dynamic>>)
+              .add(questionData);
+        } else {
+          (analysisData['incorrectAnswers'] as List<Map<String, dynamic>>)
+              .add(questionData);
+        }
+      }
+
+      // Add time analysis
+      (analysisData['timeAnalysis']['perQuestion'] as Map<int, int>)[i] =
+          q['timeSpent'] as int;
+
+      // Add confidence if question was answered correctly
+      if (q['userAnswer'] == q['correctAnswer']) {
+        (analysisData['confidenceAnalysis'] as Map<int, double>)[i] =
+            q['confidence'] as double;
+      }
+    }
+
+    // Navigate to analysis screen with data
+    Navigator.pushReplacementNamed(
+      context,
+      '/testAnalysis',
+      arguments: {
+        'analysisData': analysisData,
+        'username': username,
+        'testType': testType,
+        'questions': questions.map((q) => {
+          'question': q['question'],
+          'options': q['options'],
+          'userAnswer': q['userAnswer'],
+          'correctAnswer': q['correctAnswer'],
+          'markedForReview': q['markedForReview'],
+          'timeSpent': q['timeSpent'],
+          'confidence': q['confidence'],
+          'answerHistory': q['answerHistory'],
+        }).toList(),
+      },
+    );
   }
 
   // Toggle sidebar visibility
@@ -213,279 +317,350 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final sidebarWidth = size.width * 0.7; // 70% of screen width
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("$testType Test"),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              formatTime(remainingTime),
-              style: const TextStyle(fontSize: 18, color: Colors.red),
+    // ignore: deprecated_member_use
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("$testType Test"),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                formatTime(remainingTime),
+                style: const TextStyle(fontSize: 18, color: Colors.red),
+              ),
             ),
-          ),
-        ],
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: Stack(
+          ],
+        ),
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Stack(
                 children: [
-                  // Main question area
-                  SizedBox(
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.only(
-                        left: 16.0,
-                        right: isSidebarVisible ? sidebarWidth + 13.0 : 13.0,
-                        top: 16.0,
-                        bottom: 16.0,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            "Question ${currentQuestionIndex + 1}:",
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                  // Main content area
+                  _buildMainContent(),
+
+                  // Animated Sidebar
+                  if (isSidebarVisible)
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: AnimatedBuilder(
+                        animation: _animation,
+                        builder: (context, child) {
+                          return ClipRect(
+                            child: SizeTransition(
+                              sizeFactor: _animation,
+                              axis: Axis.horizontal,
+                              child: Container(
+                                width: 280,
+                                color: Colors.white,
+                                child: _buildSidebar(),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Html(
-                            data: questions[currentQuestionIndex]['question'],
-                            style: {
-                              "body": Style(
-                                fontSize: FontSize(16.0),
-                                margin: Margins.zero,
-                                // padding: EdgeInsets.zero,
-                              ),
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          ...questions[currentQuestionIndex]['options']
-                              .map<Widget>((option) {
-                            return Card(
-                              elevation: 2,
-                              margin: const EdgeInsets.only(bottom: 8.0),
-                              child: ListTile(
-                                leading: Radio<String>(
-                                  value: option,
-                                  groupValue: questions[currentQuestionIndex]
-                                      ['userAnswer'],
-                                  onChanged: selectAnswer,
-                                ),
-                                title: Html(
-                                  data: option,
-                                  style: {
-                                    "body": Style(
-                                      fontSize: FontSize(14.0),
-                                      margin: Margins.zero,
-                                      // padding: EdgeInsets.zero,
-                                    ),
-                                  },
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ],
+                          );
+                        },
                       ),
                     ),
-                  ),
 
-                  // Animated sidebar
-                  AnimatedBuilder(
-                    animation: _animation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(
-                          size.width * (1 - _animation.value),
-                          0,
-                        ),
-                        child: child,
-                      );
-                    },
-                    child: Container(
-                      width: sidebarWidth,
-                      height: double.infinity,
-                      color: Colors.grey[200]!.withOpacity(0.95),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Questions',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    isSidebarVisible
-                                        ? Icons.chevron_right
-                                        : Icons.chevron_left,
-                                  ),
-                                  onPressed: toggleSidebar,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: GridView.builder(
-                              padding: const EdgeInsets.all(8.0),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 4,
-                                childAspectRatio: 1.0,
-                                crossAxisSpacing: 4.0,
-                                mainAxisSpacing: 4.0,
-                              ),
-                              itemCount: questions.length,
-                              itemBuilder: (context, index) {
-                                Color buttonColor;
-
-                                if (questions[index]['markedForReview'] ==
-                                    true) {
-                                  buttonColor =
-                                      questions[index]['userAnswer'] != null
-                                          ? Colors.orange
-                                          : Colors.purple;
-                                } else {
-                                  buttonColor =
-                                      questions[index]['userAnswer'] != null
-                                          ? Colors.green
-                                          : Colors.red;
-                                }
-
-                                return ElevatedButton(
-                                  onPressed: () => navigateToQuestion(index),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: buttonColor,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const Divider(height: 1, color: Colors.grey),
-                          Container(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Question Status',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                _buildLegendItem(Colors.red, 'Not Attempted'),
-                                _buildLegendItem(Colors.green, 'Answered'),
-                                _buildLegendItem(
-                                    Colors.purple, 'Marked for Review'),
-                                _buildLegendItem(Colors.orange,
-                                    'Marked for Review (Answered)'),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Toggle button for smaller screens
+                  // Hamburger menu button
                   Positioned(
-                    right: 0,
-                    top: size.height * 0.5,
-                    child: AnimatedOpacity(
-                      opacity: isSidebarVisible ? 0.0 : 1.0,
-                      duration: const Duration(milliseconds: 200),
+                    top: 20,
+                    right: 20,
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(8),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            bottomLeft: Radius.circular(8),
-                          ),
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: IconButton(
-                          icon: Icon(Icons.chevron_left),
-                          onPressed: toggleSidebar,
+                          icon: Icon(
+                            isSidebarVisible ? Icons.close : Icons.menu,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          padding: const EdgeInsets.all(12),
+                          onPressed: () {
+                            setState(() {
+                              isSidebarVisible = !isSidebarVisible;
+                              if (isSidebarVisible) {
+                                _animationController.forward();
+                              } else {
+                                _animationController.reverse();
+                              }
+                            });
+                          },
+                          tooltip: isSidebarVisible
+                              ? 'Close sidebar'
+                              : 'Open sidebar',
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              spacing: 8.0,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: toggleMarkForReview,
+                  icon: const Icon(Icons.bookmark_border),
+                  label: const Text("Review"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: currentQuestionIndex > 0
+                      ? () => navigateToQuestion(currentQuestionIndex - 1)
+                      : null,
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text("Prev"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: currentQuestionIndex < questions.length - 1
+                      ? () => navigateToQuestion(currentQuestionIndex + 1)
+                      : null,
+                  icon: const Icon(Icons.arrow_forward),
+                  label: const Text("Next"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: submitTest,
+                  icon: const Icon(Icons.check_circle_outline),
+                  label: const Text("Submit"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  ),
+                ),
+              ],
             ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-          child: Wrap(
-            alignment: WrapAlignment.spaceEvenly,
-            spacing: 8.0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> _onWillPop() async {
+    // First, check if sidebar is open
+    if (isSidebarVisible) {
+      setState(() {
+        isSidebarVisible = false;
+        _animationController.reverse();
+      });
+      return false;
+    }
+
+    // Show confirmation dialog
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Exit Test?'),
+              content: const Text(
+                'Are you sure you want to exit the test? Your progress will be lost.',
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: const Text('CANCEL'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                  // ignore: sort_child_properties_last
+                  child: const Text('EXIT'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red,
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false; // Return false if dialog is dismissed
+  }
+
+  Widget _buildSidebar() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ElevatedButton.icon(
-                onPressed: toggleMarkForReview,
-                icon: Icon(Icons.bookmark_border),
-                label: Text("Review"),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+              Text(
+                'Questions',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              ElevatedButton.icon(
-                onPressed: currentQuestionIndex > 0
-                    ? () => setState(() => currentQuestionIndex--)
-                    : null,
-                icon: Icon(Icons.arrow_back),
-                label: Text("Prev"),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+              IconButton(
+                icon: Icon(
+                  isSidebarVisible ? Icons.chevron_right : Icons.chevron_left,
                 ),
-              ),
-              ElevatedButton.icon(
-                onPressed: currentQuestionIndex < questions.length - 1
-                    ? () => setState(() => currentQuestionIndex++)
-                    : null,
-                icon: Icon(Icons.arrow_forward),
-                label: Text("Next"),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 12.0),
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: submitTest,
-                icon: Icon(Icons.check_circle_outline),
-                label: Text("Submit"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: EdgeInsets.symmetric(horizontal: 12.0),
-                ),
+                onPressed: toggleSidebar,
               ),
             ],
           ),
         ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(8.0),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              childAspectRatio: 1.0,
+              crossAxisSpacing: 4.0,
+              mainAxisSpacing: 4.0,
+            ),
+            itemCount: questions.length,
+            itemBuilder: (context, index) {
+              Color buttonColor;
+
+              if (questions[index]['markedForReview'] == true) {
+                buttonColor = questions[index]['userAnswer'] != null
+                    ? Colors.orange
+                    : Colors.purple;
+              } else {
+                buttonColor = questions[index]['userAnswer'] != null
+                    ? Colors.green
+                    : Colors.red;
+              }
+
+              return ElevatedButton(
+                onPressed: () => navigateToQuestion(index),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.zero,
+                ),
+                child: Text(
+                  '${index + 1}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const Divider(height: 1, color: Colors.grey),
+        Container(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Question Status',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildLegendItem(Colors.red, 'Not Attempted'),
+              _buildLegendItem(Colors.green, 'Answered'),
+              _buildLegendItem(Colors.purple, 'Marked for Review'),
+              _buildLegendItem(Colors.orange, 'Marked for Review (Answered)'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMainContent() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        left: 16.0,
+        right: isSidebarVisible ? 280 + 13.0 : 13.0,
+        top: 16.0,
+        bottom: 16.0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            "Question ${currentQuestionIndex + 1}:",
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Html(
+            data: questions[currentQuestionIndex]['question'] as String,
+            style: {
+              "body": Style(
+                fontSize: FontSize(16.0),
+                margin: Margins.zero,
+                // padding: EdgeInsets.zero,
+              ),
+            },
+          ),
+          const SizedBox(height: 20),
+          ...(questions[currentQuestionIndex]['options'] as List<String>)
+              .asMap()
+              .entries
+              .map((entry) {
+            final int idx = entry.key;
+            final String option = entry.value;
+            final String optionLabel =
+                String.fromCharCode(65 + idx); // A, B, C, D
+
+            return Card(
+              elevation: 2,
+              margin: const EdgeInsets.only(bottom: 8.0),
+              child: ListTile(
+                leading: Radio<String>(
+                  value: optionLabel,
+                  groupValue: questions[currentQuestionIndex]['userAnswer'],
+                  onChanged: selectAnswer,
+                ),
+                title: Html(
+                  data: option,
+                  style: {
+                    "body": Style(
+                      fontSize: FontSize(14.0),
+                      margin: Margins.zero,
+                    ),
+                  },
+                ),
+              ),
+            );
+          }).toList(),
+        ],
       ),
     );
   }
