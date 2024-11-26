@@ -12,27 +12,25 @@ class UniversalTestInterface extends StatefulWidget {
 
 class _UniversalTestInterfaceState extends State<UniversalTestInterface>
     with SingleTickerProviderStateMixin {
-  late List<Map<String, dynamic>> questions;
+  final _apiService = ApiService();
+  List<Map<String, dynamic>> questions = [];
   bool isLoading = true;
+  bool _hasInitialized = false; // Add flag to track initialization
+  String username = "";
+  String testType = "";
+  String? testId; // Add testId to track the current test
   int currentQuestionIndex = 0;
-  late int totalTime;
-  late Timer timer;
-  int remainingTime = 0;
-  bool isSidebarVisible = false; // Start with sidebar closed
   DateTime? currentQuestionStartTime;
-
-  late String username;
-  late String testType;
-  final ApiService _apiService = ApiService();
-
-  // Animation controller for sidebar
+  late Timer timer;
+  int totalTime = 0;
+  int remainingTime = 0;
+  bool isSidebarVisible = false;
   late AnimationController _animationController;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    questions = [];
     currentQuestionStartTime = DateTime.now();
 
     // Initialize animation controller
@@ -58,16 +56,20 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final Map<String, String> args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, String>;
-    username = args['username'] ?? "Unknown";
-    testType = args['testType'] ?? "Unknown";
+    // Only initialize once
+    if (!_hasInitialized) {
+      final Map<String, String> args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+      username = args['username'] ?? "Unknown";
+      testType = args['testType'] ?? "Unknown";
 
-    totalTime = testType == "Full-length" ? 180 * 60 : 40 * 60;
-    remainingTime = totalTime;
+      totalTime = testType == "Full-length" ? 180 * 60 : 40 * 60;
+      remainingTime = totalTime;
 
-    fetchQuestions();
-    startTimer();
+      fetchQuestions();
+      startTimer();
+      _hasInitialized = true;
+    }
   }
 
   // Fetch questions from the API
@@ -82,15 +84,16 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
 
       setState(() {
         questions = List<Map<String, dynamic>>.from(
-          (response['addedQuestions'] as List).map((q) => {
-                'question': q['Question'] as String,
+          (response['addedQuestions'] as List).asMap().entries.map((entry) => {
+                'index': entry.key,
+                'question': entry.value['Question'] as String,
                 'options': <String>[
-                  q['OptionA'] as String,
-                  q['OptionB'] as String,
-                  q['OptionC'] as String,
-                  q['OptionD'] as String,
+                  entry.value['OptionA'] as String,
+                  entry.value['OptionB'] as String,
+                  entry.value['OptionC'] as String,
+                  entry.value['OptionD'] as String,
                 ],
-                'correctAnswer': q['CorrectOption'] as String,
+                'correctAnswer': entry.value['CorrectOption'] as String,
                 'userAnswer': null,
                 'markedForReview': false,
                 'answerHistory': <String>[],
@@ -105,6 +108,23 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
       setState(() {
         isLoading = false;
       });
+      // Show error dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Error"),
+          content: Text("Failed to load test questions: $e"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Return to previous screen
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -244,20 +264,24 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
           (questions[currentQuestionIndex]['timeSpent'] as int) + timeSpent;
     }
 
+    // Sort questions by original index
+    final sortedQuestions = List<Map<String, dynamic>>.from(questions)
+      ..sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
+
     // Process questions for analysis
-    final processedQuestions = questions.map((q) {
+    final processedQuestions = sortedQuestions.map((q) {
       final plainUserAnswer = convertHtmlToPlainText(q['userAnswer'] as String?);
       final plainCorrectAnswer = convertHtmlToPlainText(q['correctAnswer'] as String);
       final plainOptions = (q['options'] as List<dynamic>)
           .map((option) => convertHtmlToPlainText(option.toString()))
           .toList();
       
-      // Determine if answer is correct
       final isCorrect = plainUserAnswer != null && 
                        plainUserAnswer.isNotEmpty && 
                        plainUserAnswer == plainCorrectAnswer;
 
       return {
+        'index': q['index'] as int,
         'question': convertHtmlToPlainText(q['question'] as String),
         'options': plainOptions,
         'userAnswer': plainUserAnswer,
@@ -272,7 +296,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
       };
     }).toList();
 
-    // Prepare analysis data
+    // Prepare analysis data locally
     final Map<String, dynamic> analysisData = {
       'correctAnswers': <Map<String, dynamic>>[],
       'incorrectAnswers': <Map<String, dynamic>>[],
@@ -286,41 +310,40 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
     };
 
     // Categorize questions
-    for (var i = 0; i < processedQuestions.length; i++) {
-      final q = processedQuestions[i];
+    for (var question in processedQuestions) {
+      final originalIndex = question['index'] as int;
       
-      if (q['markedForReview'] as bool) {
-        if (q['userAnswer'] == null || (q['userAnswer'] as String).isEmpty) {
-          analysisData['markedReviewUnanswered'].add(q);
+      if (question['markedForReview'] as bool) {
+        if (question['userAnswer'] == null || (question['userAnswer'] as String).isEmpty) {
+          analysisData['markedReviewUnanswered'].add(question);
         } else {
-          analysisData['markedReviewAnswered'].add(q);
-          if (q['isCorrect'] as bool) {
-            analysisData['correctAnswers'].add(q);
+          analysisData['markedReviewAnswered'].add(question);
+          if (question['isCorrect'] as bool) {
+            analysisData['correctAnswers'].add(question);
           } else {
-            analysisData['incorrectAnswers'].add(q);
+            analysisData['incorrectAnswers'].add(question);
           }
         }
-      } else if (q['userAnswer'] != null && (q['userAnswer'] as String).isNotEmpty) {
-        if (q['isCorrect'] as bool) {
-          analysisData['correctAnswers'].add(q);
+      } else if (question['userAnswer'] != null && (question['userAnswer'] as String).isNotEmpty) {
+        if (question['isCorrect'] as bool) {
+          analysisData['correctAnswers'].add(question);
         } else {
-          analysisData['incorrectAnswers'].add(q);
+          analysisData['incorrectAnswers'].add(question);
         }
       } else {
-        analysisData['incorrectAnswers'].add(q);
+        analysisData['incorrectAnswers'].add(question);
       }
 
       // Record time and confidence
-      analysisData['timeAnalysis']['perQuestion'][i] = q['timeSpent'] as int;
-      if (q['isCorrect'] as bool) {
-        analysisData['confidenceAnalysis'][i] = q['confidence'] as double;
-      }
+      analysisData['timeAnalysis']['perQuestion'][originalIndex] = question['timeSpent'] as int;
+      analysisData['confidenceAnalysis'][originalIndex] = question['confidence'] as double;
     }
 
-    // Navigate to analysis screen
-    Navigator.pushReplacementNamed(
+    // Navigate to analysis screen with local analysis data
+    Navigator.pushNamedAndRemoveUntil(
       context,
       '/testAnalysis',
+      (route) => false, // Clear the entire stack
       arguments: {
         'analysisData': analysisData,
         'username': username,
@@ -612,7 +635,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
             itemBuilder: (context, index) {
               Color buttonColor;
 
-              if (questions[index]['markedForReview'] == true) {
+              if (questions[index]['markedForReview'] as bool) {
                 buttonColor = questions[index]['userAnswer'] != null
                     ? Colors.orange
                     : Colors.purple;

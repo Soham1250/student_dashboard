@@ -44,13 +44,12 @@ class ApiService {
     return await getRequest(url);
   }
 
-  // Private method to process HTTP responses
   dynamic _processResponse(http.Response response) {
     print(response.body); // Debug line
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      handleError(response); 
+      throw Exception('Failed to process request: ${response.statusCode}');
     }
   }
 }

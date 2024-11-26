@@ -4,14 +4,15 @@ import 'package:fl_chart/fl_chart.dart';
 class TestAnalysisScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final args =
+    final Map<String, dynamic> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final analysisData = args['analysisData'] as Map<String, dynamic>;
-    final username = args['username'] ?? "Unknown" as String;
-    final testType = args['testType'] ?? "Unknown" as String;
-    final questions = args['questions'] as List<Map<String, dynamic>>;
 
-    // Extract data from analysisData
+    final analysisData = args['analysisData'] as Map<String, dynamic>;
+    final username = args['username'] as String;
+    final testType = args['testType'] as String;
+    final questions = List<Map<String, dynamic>>.from(args['questions'] as List)
+      ..sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
+
     final correctAnswers =
         analysisData['correctAnswers'] as List<Map<String, dynamic>>;
     final incorrectAnswers =
@@ -35,6 +36,7 @@ class TestAnalysisScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('$testType Analysis'),
         elevation: 0,
+        automaticallyImplyLeading: false, // Remove back arrow
       ),
       body: SafeArea(
         child: Column(
@@ -158,23 +160,42 @@ class TestAnalysisScreen extends StatelessWidget {
                     ),
                     // Add bottom padding to prevent overlap with button
                     SizedBox(height: 80),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              '/main',
+                              arguments: {'username': username},
+                              (route) => false, // Clear the entire stack
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: Theme.of(context).primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Back to Dashboard',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('Back to Dashboard'),
-          ),
         ),
       ),
     );
