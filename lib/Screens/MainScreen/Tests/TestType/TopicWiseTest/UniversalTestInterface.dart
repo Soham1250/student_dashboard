@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:async'; // For Timer
-import 'dart:convert'; // For JSON parsing
+// import 'dart:convert'; // For JSON parsing
 import '../../../../../api/api_service.dart';
 import '../../../../../api/endpoints.dart';
 
@@ -235,13 +235,13 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
               child: Stack(
                 children: [
                   // Main question area
-                  Container(
+                  SizedBox(
                     width: double.infinity,
                     height: double.infinity,
                     child: SingleChildScrollView(
                       padding: EdgeInsets.only(
                         left: 16.0,
-                        right: isSidebarVisible ? sidebarWidth + 16.0 : 16.0,
+                        right: isSidebarVisible ? sidebarWidth + 13.0 : 13.0,
                         top: 16.0,
                         bottom: 16.0,
                       ),
