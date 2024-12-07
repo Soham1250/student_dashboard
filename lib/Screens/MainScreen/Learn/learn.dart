@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class LearnScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
     final String username = args?['username'] ?? 'Unknown';
     double screenWidth = MediaQuery.of(context).size.width;
 
@@ -21,27 +22,35 @@ class LearnScreen extends StatelessWidget {
             const Text(
               'What would you like to learn today?',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87),
             ),
             const SizedBox(height: 30),
-
             const Text(
               'Select Subject',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black87),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87),
             ),
             const SizedBox(height: 20),
-
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
                 children: [
-                  _buildSubjectButton(context, '/learnsubject', Icons.science, screenWidth, username, 'physics'),
-                  _buildSubjectButton(context, '/learnsubject', Icons.biotech, screenWidth, username, 'chemistry'),
-                  _buildSubjectButton(context, '/learnsubject', Icons.calculate, screenWidth, username, 'mathematics'),
-                  _buildSubjectButton(context, '/learnsubject', Icons.eco, screenWidth, username, 'biology'),
+                  _buildSubjectButton(context, '/learnsubject', Icons.science,
+                      screenWidth, username, 'physics'),
+                  _buildSubjectButton(context, '/learnsubject', Icons.biotech,
+                      screenWidth, username, 'chemistry'),
+                  _buildSubjectButton(context, '/learnsubject', Icons.calculate,
+                      screenWidth, username, 'mathematics'),
+                  _buildSubjectButton(context, '/learnsubject', Icons.eco,
+                      screenWidth, username, 'biology'),
                 ],
               ),
             ),
@@ -69,7 +78,8 @@ class LearnScreen extends StatelessWidget {
           });
         },
         icon: Icon(icon, size: 30, color: Colors.white),
-        label: Text(subjectID, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        label: Text(subjectID,
+            style: const TextStyle(color: Colors.white, fontSize: 16)),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 20),
           backgroundColor: Colors.blueAccent,
