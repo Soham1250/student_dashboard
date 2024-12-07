@@ -44,3 +44,7 @@ app.*.map.json
 plan/ER Diagram.png
 plan/updated API endpoints - CET PREP APP.xlsx
 .gitignore
+
+# FVM Version Cache
+.fvm/
+.fvmrc

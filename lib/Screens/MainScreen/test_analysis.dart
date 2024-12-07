@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class TestAnalysisScreen extends StatelessWidget {
   @override
@@ -282,11 +283,15 @@ class TestAnalysisScreen extends StatelessWidget {
               ),
               Divider(),
               Flexible(
-                child: Text(
-                  question['question'] as String,
-                  style: TextStyle(fontSize: 14),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                child: Html(
+                  data: question['question'] as String,
+                  style: {
+                    "body": Style(
+                      fontSize: FontSize(16.0),
+                      margin: Margins.zero,
+                      // padding: EdgeInsets.zero,
+                    ),
+                  },
                 ),
               ),
               SizedBox(height: 8),
@@ -363,7 +368,7 @@ class TestAnalysisScreen extends StatelessWidget {
                   ),
                   if (confidence != null)
                     Text(
-                      'Confidence: ${confidence.toStringAsFixed(0)}%',
+                      'Confidence: ${isAnswerCorrect ? confidence.toStringAsFixed(0) : 0}%',
                       style: TextStyle(
                         fontSize: 12,
                         color: isAnswerCorrect
