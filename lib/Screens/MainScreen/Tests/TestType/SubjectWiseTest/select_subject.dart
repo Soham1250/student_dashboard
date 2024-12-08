@@ -55,7 +55,7 @@ class SubjectWiseTest extends StatelessWidget {
           arguments: {
             'username': username,
             'testType': testType,
-            'subject': subjectId,
+            'subjectId': subjectId,
           },
         );
       },
