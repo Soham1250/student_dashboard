@@ -43,14 +43,41 @@ class LearnScreen extends StatelessWidget {
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
                 children: [
-                  _buildSubjectButton(context, '/learnsubject', Icons.science,
-                      screenWidth, username, 'physics'),
-                  _buildSubjectButton(context, '/learnsubject', Icons.biotech,
-                      screenWidth, username, 'chemistry'),
-                  _buildSubjectButton(context, '/learnsubject', Icons.calculate,
-                      screenWidth, username, 'mathematics'),
-                  _buildSubjectButton(context, '/learnsubject', Icons.eco,
-                      screenWidth, username, 'biology'),
+                  _buildSubjectButton(
+                    context,
+                    '/learnsubject',
+                    'assets/images/physics.png', // Path to the physics image
+                    screenWidth,
+                    username,
+                    'physics',
+                    'Physics'
+                  ),
+                  _buildSubjectButton(
+                    context,
+                    '/learnsubject',
+                    'assets/images/chemistry.png', // Path to the chemistry image
+                    screenWidth,
+                    username,
+                    'chemistry',
+                    'Chemistry',
+                  ),
+                  _buildSubjectButton(
+                    context,
+                    '/learnsubject',
+                    'assets/images/maths.png', // Path to the mathematics image
+                    screenWidth,
+                    username,
+                    'mathematics',
+                    'Maths',
+                  ),
+                  // _buildSubjectButton(
+                  //   context,
+                  //   '/learnsubject',
+                  //   'assets/images/biology.png', // Path to the biology image
+                  //   screenWidth,
+                  //   username,
+                  //   'Biology',
+                  // ),
                 ],
               ),
             ),
@@ -63,30 +90,44 @@ class LearnScreen extends StatelessWidget {
   Widget _buildSubjectButton(
     BuildContext context,
     String route,
-    IconData icon,
+    String imagePath, // Path to the image
     double screenWidth,
     String username,
     String subjectID,
+    String subject,
   ) {
     return SizedBox(
       width: screenWidth * 0.4,
-      child: ElevatedButton.icon(
+      child: ElevatedButton(
         onPressed: () {
           Navigator.pushNamed(context, route, arguments: {
             'username': username,
             'subjectID': subjectID,
           });
         },
-        icon: Icon(icon, size: 30, color: Colors.white),
-        label: Text(subjectID,
-            style: const TextStyle(color: Colors.white, fontSize: 16)),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 20),
-          backgroundColor: Colors.blueAccent,
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
           elevation: 5,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              imagePath,
+              width: 100, // Adjust the size as needed
+              height: 100,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              subject,
+              style: const TextStyle(color: Colors.black, fontSize: 16,fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ),
     );

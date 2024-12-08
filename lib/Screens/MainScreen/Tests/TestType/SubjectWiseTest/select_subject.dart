@@ -34,10 +34,9 @@ class SubjectWiseTest extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildSubjectCard(context, 'Physics', Icons.science, '/selectSubjectWiseDifficulty', username, testType, 'physics'),
-                  _buildSubjectCard(context, 'Mathematics', Icons.calculate, '/selectSubjectWiseDifficulty', username, testType, 'mathematics'),
-                  _buildSubjectCard(context, 'Chemistry', Icons.biotech, '/selectSubjectWiseDifficulty', username, testType, 'chemistry'),
-                  _buildSubjectCard(context, 'Biology', Icons.eco, '/selectSubjectWiseDifficulty', username, testType, 'biology'),
+                  _buildSubjectCard(context, 'Physics', 'assets/images/physics.png', '/selectSubjectWiseDifficulty', username, testType, 'physics'),
+                  _buildSubjectCard(context, 'Mathematics', 'assets/images/maths.png', '/selectSubjectWiseDifficulty', username, testType, 'mathematics'),
+                  _buildSubjectCard(context, 'Chemistry', 'assets/images/chemistry.png', '/selectSubjectWiseDifficulty', username, testType, 'chemistry'),
                 ],
               ),
             ),
@@ -47,43 +46,45 @@ class SubjectWiseTest extends StatelessWidget {
     );
   }
 
-  Widget _buildSubjectCard(BuildContext context, String subject, IconData icon, String route, String username, String testType, String subjectId) {
-    return GestureDetector(
-      onTap: () {
+  Widget _buildSubjectCard(BuildContext context, String subject, String imagePath, String route, String username, String testType, String subjectId) {
+    return ElevatedButton(
+      onPressed: () {
         Navigator.pushNamed(
           context,
           route,
           arguments: {
             'username': username,
             'testType': testType,
-            'subjectId': subjectId,
+            'subject': subjectId,
           },
         );
       },
-      child: Card(
-        color: Colors.blueAccent,
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.all(20),
+        backgroundColor: Colors.white,
+        elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
-        elevation: 5,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 50,
-              color: Colors.white,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            imagePath,
+            height: 80,
+            width: 80,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            subject,
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 10),
-            Text(
-              subject,
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

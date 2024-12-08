@@ -50,8 +50,8 @@ class TestAnalysisScreen extends StatelessWidget {
                     SizedBox(
                       height: 160,
                       child: ListView(
-                        scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.all(16.0),
+                        scrollDirection: Axis.horizontal,
                         children: [
                           _buildStatCard(
                             'Accuracy',

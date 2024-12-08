@@ -104,12 +104,12 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching questions: $e");
       setState(() {
         isLoading = false;
       });
       // Show error dialog
       showDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) => AlertDialog(
           title: const Text("Error"),
@@ -154,7 +154,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
     setState(() {
       questions[currentQuestionIndex]['markedForReview'] =
           !questions[currentQuestionIndex]['markedForReview'];
-      
+
       // Update confidence after marking for review
       updateConfidence();
     });
@@ -177,7 +177,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
         questions[currentQuestionIndex]['userAnswer'] = selectedAnswer;
         (questions[currentQuestionIndex]['answerHistory'] as List<String>)
             .add(selectedAnswer);
-        
+
         // Update confidence after answer selection
         updateConfidence();
       });
@@ -235,10 +235,10 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   // Helper function to convert HTML to plain text
   String convertHtmlToPlainText(String? htmlString) {
     if (htmlString == null) return '';
-    
+
     // Remove HTML tags
     String plainText = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
-    
+
     // Decode HTML entities
     plainText = plainText
         .replaceAll('&nbsp;', ' ')
@@ -247,10 +247,10 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
         .replaceAll('&gt;', '>')
         .replaceAll('&quot;', '"')
         .replaceAll('&#39;', "'");
-    
+
     // Remove extra whitespace
     plainText = plainText.replaceAll(RegExp(r'\s+'), ' ').trim();
-    
+
     return plainText;
   }
 
@@ -270,15 +270,17 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
 
     // Process questions for analysis
     final processedQuestions = sortedQuestions.map((q) {
-      final plainUserAnswer = convertHtmlToPlainText(q['userAnswer'] as String?);
-      final plainCorrectAnswer = convertHtmlToPlainText(q['correctAnswer'] as String);
+      final plainUserAnswer =
+          convertHtmlToPlainText(q['userAnswer'] as String?);
+      final plainCorrectAnswer =
+          convertHtmlToPlainText(q['correctAnswer'] as String);
       final plainOptions = (q['options'] as List<dynamic>)
           .map((option) => convertHtmlToPlainText(option.toString()))
           .toList();
-      
-      final isCorrect = plainUserAnswer != null && 
-                       plainUserAnswer.isNotEmpty && 
-                       plainUserAnswer == plainCorrectAnswer;
+
+      final isCorrect = plainUserAnswer != null &&
+          plainUserAnswer.isNotEmpty &&
+          plainUserAnswer == plainCorrectAnswer;
 
       return {
         'index': q['index'] as int,
@@ -312,9 +314,10 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
     // Categorize questions
     for (var question in processedQuestions) {
       final originalIndex = question['index'] as int;
-      
+
       if (question['markedForReview'] as bool) {
-        if (question['userAnswer'] == null || (question['userAnswer'] as String).isEmpty) {
+        if (question['userAnswer'] == null ||
+            (question['userAnswer'] as String).isEmpty) {
           analysisData['markedReviewUnanswered'].add(question);
         } else {
           analysisData['markedReviewAnswered'].add(question);
@@ -324,7 +327,8 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
             analysisData['incorrectAnswers'].add(question);
           }
         }
-      } else if (question['userAnswer'] != null && (question['userAnswer'] as String).isNotEmpty) {
+      } else if (question['userAnswer'] != null &&
+          (question['userAnswer'] as String).isNotEmpty) {
         if (question['isCorrect'] as bool) {
           analysisData['correctAnswers'].add(question);
         } else {
@@ -335,8 +339,10 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
       }
 
       // Record time and confidence
-      analysisData['timeAnalysis']['perQuestion'][originalIndex] = question['timeSpent'] as int;
-      analysisData['confidenceAnalysis'][originalIndex] = question['confidence'] as double;
+      analysisData['timeAnalysis']['perQuestion'][originalIndex] =
+          question['timeSpent'] as int;
+      analysisData['confidenceAnalysis'][originalIndex] =
+          question['confidence'] as double;
     }
 
     // Navigate to analysis screen with local analysis data
@@ -359,14 +365,16 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
 
     // Time factor: Reduce confidence if took too long
     int timeSpent = question['timeSpent'] as int;
-    if (timeSpent > 120) { // If more than 2 minutes
+    if (timeSpent > 120) {
+      // If more than 2 minutes
       confidence -= min((timeSpent - 120) / 6, 30.0); // Reduce up to 30%
     }
 
     // Answer changes factor: Each change reduces confidence
     List<String> answerHistory = question['answerHistory'] as List<String>;
     if (answerHistory.length > 1) {
-      confidence -= min(answerHistory.length * 10, 40.0); // Reduce 10% per change, up to 40%
+      confidence -= min(
+          answerHistory.length * 10, 40.0); // Reduce 10% per change, up to 40%
     }
 
     // Marked for review factor: Reduce confidence if marked
@@ -381,7 +389,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   void updateConfidence() {
     if (currentQuestionIndex >= 0 && currentQuestionIndex < questions.length) {
       setState(() {
-        questions[currentQuestionIndex]['confidence'] = 
+        questions[currentQuestionIndex]['confidence'] =
             calculateConfidence(questions[currentQuestionIndex]);
       });
     }
