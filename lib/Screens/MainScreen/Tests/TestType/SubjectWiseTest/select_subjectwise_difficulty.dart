@@ -9,7 +9,7 @@ class SelectSubjectWiseDifficultyScreen extends StatelessWidget {
     // Default to 'Unknown' if any argument is missing
     final String username = args?['username'] ?? 'Unknown';
     final String testType = args?['testType'] ?? 'Unknown';
-    final String subjectId = args?['subjectId'] ?? 'Unknown';
+    final String subjectId = args?['subject'] ?? 'Unknown';
 
     return Scaffold(
       appBar: AppBar(
@@ -119,7 +119,7 @@ class SelectSubjectWiseDifficultyScreen extends StatelessWidget {
           arguments: {
             'username': username,
             'testType': testType,
-            'subjectId': subjectId,
+            'subject': subjectId, // Changed from 'subjectId' to 'subject'
             'difficulty': difficulty,
           },
         );

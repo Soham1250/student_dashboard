@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class SubjectWiseTest extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
     final String username = args?['username'] ?? 'Unknown';
     final String testType = args?['testType'] ?? 'Unknown';
 
@@ -34,9 +35,30 @@ class SubjectWiseTest extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildSubjectCard(context, 'Physics', 'assets/images/physics.png', '/selectSubjectWiseDifficulty', username, testType, 'physics'),
-                  _buildSubjectCard(context, 'Mathematics', 'assets/images/maths.png', '/selectSubjectWiseDifficulty', username, testType, 'mathematics'),
-                  _buildSubjectCard(context, 'Chemistry', 'assets/images/chemistry.png', '/selectSubjectWiseDifficulty', username, testType, 'chemistry'),
+                  _buildSubjectCard(
+                      context,
+                      'Physics',
+                      'assets/images/physics.png',
+                      '/selectSubjectWiseDifficulty',
+                      username,
+                      testType,
+                      'physics'),
+                  _buildSubjectCard(
+                      context,
+                      'Mathematics',
+                      'assets/images/maths.png',
+                      '/selectSubjectWiseDifficulty',
+                      username,
+                      testType,
+                      'mathematics'),
+                  _buildSubjectCard(
+                      context,
+                      'Chemistry',
+                      'assets/images/chemistry.png',
+                      '/selectSubjectWiseDifficulty',
+                      username,
+                      testType,
+                      'chemistry'),
                 ],
               ),
             ),
@@ -46,7 +68,14 @@ class SubjectWiseTest extends StatelessWidget {
     );
   }
 
-  Widget _buildSubjectCard(BuildContext context, String subject, String imagePath, String route, String username, String testType, String subjectId) {
+  Widget _buildSubjectCard(
+      BuildContext context,
+      String subject,
+      String imagePath,
+      String route,
+      String username,
+      String testType,
+      String subjectId) {
     return ElevatedButton(
       onPressed: () {
         Navigator.pushNamed(
@@ -55,7 +84,7 @@ class SubjectWiseTest extends StatelessWidget {
           arguments: {
             'username': username,
             'testType': testType,
-            'subjectId': subjectId,
+            'subject': subjectId,
           },
         );
       },
