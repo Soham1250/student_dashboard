@@ -1,5 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import '../api/api_service.dart';
 import '../services/auth_storage_service.dart';
 
@@ -49,7 +49,8 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login', style: TextStyle(fontSize: 24, color: Colors.white)),
+        title: const Text('Login',
+            style: TextStyle(fontSize: 24, color: Colors.white)),
         backgroundColor: Colors.blueAccent,
         elevation: 0,
       ),
@@ -77,9 +78,11 @@ class _LoginPageState extends State<LoginPage> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blueAccent, width: 2.0),
+                    borderSide:
+                        const BorderSide(color: Colors.blueAccent, width: 2.0),
                   ),
-                  prefixIcon: const Icon(Icons.person, color: Colors.blueAccent),
+                  prefixIcon:
+                      const Icon(Icons.person, color: Colors.blueAccent),
                 ),
               ),
               const SizedBox(height: 20),
@@ -95,12 +98,15 @@ class _LoginPageState extends State<LoginPage> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blueAccent, width: 2.0),
+                    borderSide:
+                        const BorderSide(color: Colors.blueAccent, width: 2.0),
                   ),
                   prefixIcon: const Icon(Icons.lock, color: Colors.blueAccent),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
                       color: Colors.blueAccent,
                     ),
                     onPressed: () {
@@ -117,7 +123,8 @@ class _LoginPageState extends State<LoginPage> {
               if (_errorMessage.isNotEmpty)
                 Text(
                   _errorMessage,
-                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Colors.red, fontWeight: FontWeight.bold),
                 ),
               const SizedBox(height: 20),
 
@@ -125,7 +132,8 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 width: screenWidth * 0.8,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _login,  // Disable button if loading
+                  onPressed:
+                      _isLoading ? null : _login, // Disable button if loading
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding: const EdgeInsets.symmetric(vertical: 15),
@@ -135,7 +143,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
-                      : const Text('Login', style: TextStyle(fontSize: 18, color: Colors.white)),
+                      : const Text('Login',
+                          style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -145,15 +154,17 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/forgotpassword');
+                      Navigator.pushNamed(context, '/forgotPassword');
                     },
-                    child: const Text('Forgot Password?', style: TextStyle(color: Colors.blueAccent)),
+                    child: const Text('Forgot Password?',
+                        style: TextStyle(color: Colors.blueAccent)),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/register');
                     },
-                    child: const Text('New? Register!', style: TextStyle(color: Colors.blueAccent)),
+                    child: const Text('New? Register!',
+                        style: TextStyle(color: Colors.blueAccent)),
                   ),
                 ],
               ),

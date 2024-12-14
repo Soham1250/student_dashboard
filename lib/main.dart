@@ -135,7 +135,7 @@ class StudentDashboardApp extends StatelessWidget {
           '/newGrievance': (context) => NewGrievanceScreen(),
 
           // Auth
-          // '/forgotPassword': (context) => ForgotPasswordScreen(),
+          '/forgotPassword': (context) => ForgotPasswordPage(),
           '/register': (context) => RegisterPage(),
         },
       ),

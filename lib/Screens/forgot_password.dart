@@ -36,7 +36,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/');
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/',
+                    (route) => false,
+                  );
                 },
                 child: const Text("Back"),
               ),
@@ -51,7 +55,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Forgot Password', style: TextStyle(fontSize: 24, color: Colors.white)),
+        title: const Text('Forgot Password',
+            style: TextStyle(fontSize: 24, color: Colors.white)),
         backgroundColor: Colors.deepOrangeAccent,
         elevation: 0,
       ),
@@ -63,7 +68,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             const SizedBox(height: 20),
             const Text(
               'Oops, Forgot your password?',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.deepOrangeAccent),
+              style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepOrangeAccent),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -73,7 +81,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
-
             TextField(
               controller: _loginEmailController,
               decoration: InputDecoration(
@@ -82,14 +89,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                 ),
-                prefixIcon: const Icon(Icons.email, color: Colors.deepOrangeAccent),
+                prefixIcon:
+                    const Icon(Icons.email, color: Colors.deepOrangeAccent),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.deepOrangeAccent, width: 2.0),
+                  borderSide: const BorderSide(
+                      color: Colors.deepOrangeAccent, width: 2.0),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-
             TextField(
               controller: _confirmEmailController,
               decoration: InputDecoration(
@@ -98,21 +106,22 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                 ),
-                prefixIcon: const Icon(Icons.email_outlined, color: Colors.deepOrangeAccent),
+                prefixIcon: const Icon(Icons.email_outlined,
+                    color: Colors.deepOrangeAccent),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.deepOrangeAccent, width: 2.0),
+                  borderSide: const BorderSide(
+                      color: Colors.deepOrangeAccent, width: 2.0),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-
             if (_errorMessage.isNotEmpty)
               Text(
                 _errorMessage,
-                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.bold),
               ),
             const SizedBox(height: 20),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -122,23 +131,27 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[400],
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 30),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text('< Back', style: TextStyle(color: Colors.white)),
+                  child: const Text('< Back',
+                      style: TextStyle(color: Colors.white)),
                 ),
                 ElevatedButton(
                   onPressed: _sendRequest,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepOrangeAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 30),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text('Send >', style: TextStyle(color: Colors.white)),
+                  child: const Text('Send >',
+                      style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
