@@ -5,7 +5,7 @@ class StudentProfile {
   final String email;
   final String phoneNumber;
   final String currentClass;
-  final String? gap;
+  final String gap;
 
   StudentProfile({
     required this.userId,
@@ -14,7 +14,7 @@ class StudentProfile {
     required this.email,
     required this.phoneNumber,
     required this.currentClass,
-    this.gap,
+    required this.gap,
   });
 
   factory StudentProfile.fromJson(Map<String, dynamic> json) {
@@ -25,7 +25,7 @@ class StudentProfile {
       email: json['Email'],
       phoneNumber: json['PhoneNumber'],
       currentClass: json['CurrentClass'],
-      gap: json['Gap'],
+      gap: json['Gap'] ?? "None",
     );
   }
 

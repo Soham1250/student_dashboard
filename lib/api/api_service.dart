@@ -1,7 +1,6 @@
 // api/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../utils/error_handler.dart';
 import 'endpoints.dart';
 
 class ApiService {
@@ -34,6 +33,19 @@ class ApiService {
     final body = {
       'Email': loginId,
       'Password': password,
+      'fields': [
+        'UserID',
+        'FirstName',
+        'LastName',
+        'Email',
+        'Password',
+        'PhoneNumber',
+        'CurrentClass',
+        'Gap',
+        'Role',
+        'isAdmin',
+        'TimeStamp'
+      ]
     };
     return await postRequest(loginEndpoint, body);
   }
@@ -47,9 +59,19 @@ class ApiService {
   dynamic _processResponse(http.Response response) {
     print(response.body); // Debug line
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final responseData = jsonDecode(response.body);
+      // Add default values for missing fields
+      if (responseData is Map<String, dynamic>) {
+        responseData['isFaculty'] ??= false; // Add default value if missing
+      }
+      return responseData;
     } else {
-      throw Exception('Failed to process request: ${response.statusCode}');
+      try {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Unknown error occurred');
+      } catch (e) {
+        throw Exception('Failed to process response: ${response.statusCode}');
+      }
     }
   }
 }

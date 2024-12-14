@@ -1,0 +1,7 @@
+Gamified Test Level (5 Test with 50%+ accuracy for opening next level)
+Question Rendering (HTML + LaTeX)
+subject tiles should be icons not named - Done
+Replace profile photo with sakec logo 
+I agree checkbox for mails and msg from sakec
+Assign UserID along with each test
+API integration for Performance

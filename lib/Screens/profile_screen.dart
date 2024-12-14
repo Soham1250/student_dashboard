@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:student_dashboard/services/auth_storage_service.dart';
 import '../api/api_service.dart';
 import '../models/student_profile.dart';
 
@@ -13,18 +14,21 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ApiService _apiService = ApiService();
+  final AuthStorageService _authStorage = AuthStorageService();
   late Future<StudentProfile> _studentFuture;
 
   void _handleEdit() {
     // Will be implemented later
   }
 
-  void _handleLogout() {
-    // Will be implemented later
-  }
-
-  void _handleCamera() {
-    // Will be implemented later
+  void _handleLogout() async {
+    await _authStorage.clearCredentials();
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/',
+      (route) => false,
+    );
   }
 
   @override
@@ -97,11 +101,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        backgroundColor: const Color.fromARGB(221, 40, 8, 26), // Dark background color
+        backgroundColor:
+            const Color.fromARGB(221, 40, 8, 26), // Dark background color
         elevation: 0,
       ),
       body: Container(
-        color:  Colors.deepPurple,
+        color: Colors.deepPurple,
         child: FutureBuilder<StudentProfile>(
           future: _studentFuture,
           builder: (context, snapshot) {
@@ -168,35 +173,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               child: CircleAvatar(
                                 radius: 50,
-                                backgroundColor: const Color.fromARGB(255, 230, 147, 192),
+                                backgroundColor:
+                                    const Color.fromARGB(255, 230, 147, 192),
                                 child: Text(
                                   student.firstName[0] + student.lastName[0],
                                   style: const TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: _handleCamera,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(255, 230, 147, 192),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white24,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    size: 20,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -218,6 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildTextField('Email:', student.email),
                         _buildTextField('Phone:', student.phoneNumber),
                         _buildTextField('Class:', student.currentClass),
+                        _buildTextField('Gap:', student.gap),
                       ],
                     ),
                   ),
@@ -231,14 +215,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onPressed: _handleEdit,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: const Color.fromARGB(255, 56, 193, 79),
+                            backgroundColor:
+                                const Color.fromARGB(255, 56, 193, 79),
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: const BorderSide(
-                                color: Color.fromARGB(0, 0, 0, 0)
-                              )
-                            ),
+                                borderRadius: BorderRadius.circular(8),
+                                side: const BorderSide(
+                                    color: Color.fromARGB(0, 0, 0, 0))),
                           ),
                           child: const Text(
                             'Edit',
