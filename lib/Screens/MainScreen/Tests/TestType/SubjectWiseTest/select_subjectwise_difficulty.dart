@@ -1,25 +1,63 @@
 import 'package:flutter/material.dart';
+import '../../../../../services/difficulty_progression_service.dart';
 
-class SelectSubjectWiseDifficultyScreen extends StatelessWidget {
+class SelectSubjectWiseDifficultyScreen extends StatefulWidget {
+  @override
+  _SelectSubjectWiseDifficultyScreenState createState() =>
+      _SelectSubjectWiseDifficultyScreenState();
+}
+
+class _SelectSubjectWiseDifficultyScreenState
+    extends State<SelectSubjectWiseDifficultyScreen> {
+  final DifficultyProgressionService _progressionService =
+      DifficultyProgressionService();
+  final Map<String, bool> _unlockedDifficulties = {
+    'easy': true,
+    'medium': true,
+    'hard': true,
+    'mixed': false,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnlockedDifficulties();
+  }
+
+  Future<void> _loadUnlockedDifficulties() async {
+    final Map<String, String> args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+    final String username = args['username'] ?? "Unknown";
+    final String subjectId = args['subjectId'] ?? "Unknown";
+
+    // Check each difficulty level
+    for (String difficulty in ['medium', 'hard', 'mixed']) {
+      _unlockedDifficulties[difficulty] =
+          await _progressionService.isDifficultyUnlocked(
+        username,
+        difficulty,
+        subjectId,
+      );
+    }
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
-
-    // Default to 'Unknown' if any argument is missing
-    final String username = args?['username'] ?? 'Unknown';
-    final String testType = args?['testType'] ?? 'Unknown';
-    final String subjectId = args?['subject'] ?? 'Unknown';
+    final Map<String, String> args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+    final String username = args['username'] ?? "Unknown";
+    final String testType = args['testType'] ?? "Unknown";
+    final String subjectId = args['subjectId'] ?? "Unknown";
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select Difficulty'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center, // Center content vertically
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
               'Select Difficulty',
@@ -28,78 +66,94 @@ class SelectSubjectWiseDifficultyScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 30), // Space between title and buttons
+            const SizedBox(height: 40),
 
             // Row 1: Easy and Medium
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: _buildDifficultyButton(
-                        context,
-                        'Easy',
-                        Icons.check_circle,
-                        Colors.green,
-                        '/selectSubjectWiseTest',
-                        username,
-                        testType,
-                        subjectId,
-                        'easy')),
-                const SizedBox(width: 20), // Space between buttons
+                      context,
+                      'Easy',
+                      Icons.check_circle,
+                      Colors.green,
+                      '/testInterface',
+                      username,
+                      testType,
+                      subjectId,
+                      'easy',
+                      true,
+                    ),
+                  ),
+                ),
                 Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: _buildDifficultyButton(
-                        context,
-                        'Medium',
-                        Icons.trending_up,
-                        Colors.orange,
-                        '/selectSubjectWiseTest',
-                        username,
-                        testType,
-                        subjectId,
-                        'medium')),
+                      context,
+                      'Medium',
+                      Icons.trending_up,
+                      Colors.orange,
+                      '/testInterface',
+                      username,
+                      testType,
+                      subjectId,
+                      'medium',
+                      _unlockedDifficulties['medium'] ?? false,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 20), // Space between rows
+            const SizedBox(height: 24),
 
             // Row 2: Hard and Mixed
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: _buildDifficultyButton(
-                        context,
-                        'Hard',
-                        Icons.whatshot,
-                        Colors.red,
-                        '/selectSubjectWiseTest',
-                        username,
-                        testType,
-                        subjectId,
-                        'hard')),
-                const SizedBox(width: 20), // Space between buttons
+                      context,
+                      'Hard',
+                      Icons.whatshot,
+                      Colors.red,
+                      '/testInterface',
+                      username,
+                      testType,
+                      subjectId,
+                      'hard',
+                      _unlockedDifficulties['hard'] ?? false,
+                    ),
+                  ),
+                ),
                 Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: _buildDifficultyButton(
-                        context,
-                        'Mixed',
-                        Icons.shuffle,
-                        Colors.blue,
-                        '/selectSubjectWiseTest',
-                        username,
-                        testType,
-                        subjectId,
-                        'mixed')),
+                      context,
+                      'Mixed',
+                      Icons.shuffle,
+                      Colors.blue,
+                      '/testInterface',
+                      username,
+                      testType,
+                      subjectId,
+                      'mixed',
+                      _unlockedDifficulties['mixed'] ?? false,
+                    ),
+                  ),
+                ),
               ],
             ),
-
-            Text(
-                'username: $username, testType: $testType, subjectId: $subjectId'),
           ],
         ),
       ),
     );
   }
 
-  // Helper method to create buttons for each difficulty
   Widget _buildDifficultyButton(
     BuildContext context,
     String label,
@@ -110,31 +164,99 @@ class SelectSubjectWiseDifficultyScreen extends StatelessWidget {
     String testType,
     String subjectId,
     String difficulty,
+    bool isUnlocked,
   ) {
-    return ElevatedButton.icon(
-      onPressed: () {
-        Navigator.pushNamed(
-          context,
-          '/subjectwisetestinterface', // Assuming this is the next screen route
-          arguments: {
-            'username': username,
-            'testType': testType,
-            'subject': subjectId, // Changed from 'subjectId' to 'subject'
-            'difficulty': difficulty,
-          },
-        );
-      },
-      icon:
-          Icon(icon, color: Colors.white, size: 30), // Icon for the difficulty
-      label: Text(label, style: const TextStyle(fontSize: 18)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color, // Background color
-        padding: const EdgeInsets.symmetric(vertical: 20), // Button size
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15), // Rounded corners
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 80,
+          child: ElevatedButton(
+            onPressed: isUnlocked
+                ? () {
+                    Navigator.pushNamed(
+                      context,
+                      '/testInterface',
+                      arguments: {
+                        'username': username,
+                        'testType': testType,
+                        'subjectId': subjectId,
+                        'difficulty': difficulty,
+                      },
+                    );
+                  }
+                : () {
+                    _showLockMessage(context, difficulty);
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isUnlocked ? color : Colors.grey,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              elevation: isUnlocked ? 5 : 2,
+              padding: EdgeInsets.zero,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        elevation: 5, // 3D effect for buttons
+        if (!isUnlocked)
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Icon(
+              Icons.lock,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showLockMessage(BuildContext context, String difficulty) {
+    final previousDifficulty = difficulty == 'medium'
+        ? 'easy'
+        : difficulty == 'hard'
+            ? 'medium'
+            : 'hard';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('${difficulty.capitalize()} Difficulty Locked'),
+        content: Text(
+            'Complete at least 5 tests in $previousDifficulty difficulty with an average accuracy of 50% or higher to unlock ${difficulty.capitalize()} difficulty.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1)}";
   }
 }

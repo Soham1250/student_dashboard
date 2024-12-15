@@ -14,6 +14,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
+  bool _receiveUpdates = false; // New state variable for checkbox
 
   String _errorMessage = '';
   bool _isLoading = false;
@@ -87,67 +88,70 @@ class _RegisterPageState extends State<RegisterPage> {
         _phoneController.text.trim().isNotEmpty;
   }
 
- Future<void> _register() async {
-  if (!_isFormValid()) {
-    setState(() {
-      _errorMessage = 'Please fill in all the fields and verify your email.';
-    });
-    return;
-  }
-
-  setState(() {
-    _errorMessage = '';
-    _isLoading = true;
-  });
-
-  final Map<String, dynamic> requestData = {
-    'FirstName': _firstNameController.text.trim(),
-    'LastName': _lastNameController.text.trim(),
-    'Email': _emailController.text.trim(),
-    'Password': _passwordController.text.trim(),
-    'PhoneNumber': _phoneController.text.trim(),
-  };
-
-  try {
-    final response = await ApiService().postRequest(registerEndpoint, requestData);
-
-    setState(() => _isLoading = false);
-
-    // Check if registration was successful based on the presence of `UserID`
-    if (response != null && response.containsKey('UserID')) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Registration Successful"),
-            content: const Text("You have registered successfully! Please log in to continue."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-                },
-                child: const Text("Go to Login"),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
+  Future<void> _register() async {
+    if (!_isFormValid()) {
       setState(() {
-        _errorMessage = response?['message'] ?? 'Registration failed. Please try again.';
+        _errorMessage = 'Please fill in all the fields and verify your email.';
       });
+      return;
     }
-  } catch (error) {
+
     setState(() {
-      _isLoading = false;
-      _errorMessage = 'An error occurred. Please check your network connection.';
+      _errorMessage = '';
+      _isLoading = true;
     });
-    print("Error during registration: $error");
+
+    final Map<String, dynamic> requestData = {
+      'FirstName': _firstNameController.text.trim(),
+      'LastName': _lastNameController.text.trim(),
+      'Email': _emailController.text.trim(),
+      'Password': _passwordController.text.trim(),
+      'PhoneNumber': _phoneController.text.trim(),
+    };
+
+    try {
+      final response =
+          await ApiService().postRequest(registerEndpoint, requestData);
+
+      setState(() => _isLoading = false);
+
+      // Check if registration was successful based on the presence of `UserID`
+      if (response != null && response.containsKey('UserID')) {
+        showDialog(
+          // ignore: use_build_context_synchronously
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Registration Successful"),
+              content: const Text(
+                  "You have registered successfully! Please log in to continue."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, '/', (route) => false);
+                  },
+                  child: const Text("Go to Login"),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        setState(() {
+          _errorMessage =
+              response?['message'] ?? 'Registration failed. Please try again.';
+        });
+      }
+    } catch (error) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage =
+            'An error occurred. Please check your network connection.';
+      });
+      print("Error during registration: $error");
+    }
   }
-}
-
-
-
 
   @override
   void initState() {
@@ -337,6 +341,25 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
+            const SizedBox(height: 20),
+
+            CheckboxListTile(
+              title: const Text(
+                'Send me updates from SAKEC',
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontSize: 14,
+                ),
+              ),
+              value: _receiveUpdates,
+              onChanged: (bool? value) {
+                setState(() {
+                  _receiveUpdates = value ?? false;
+                });
+              },
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+            ),
             const SizedBox(height: 20),
 
             // Error message

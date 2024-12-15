@@ -21,6 +21,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Will be implemented later
   }
 
+  
+
   void _handleLogout() async {
     await _authStorage.clearCredentials();
     if (!mounted) return;
