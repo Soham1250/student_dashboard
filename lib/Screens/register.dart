@@ -149,7 +149,6 @@ class _RegisterPageState extends State<RegisterPage> {
         _errorMessage =
             'An error occurred. Please check your network connection.';
       });
-      print("Error during registration: $error");
     }
   }
 

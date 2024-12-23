@@ -48,3 +48,7 @@ plan/updated API endpoints - CET PREP APP.xlsx
 # FVM Version Cache
 .fvm/
 .fvmrc
+Subjects/Chapters/ChemistryChapters.txt
+.gitignore
+Subjects/Chapters/MathsChapters.txt
+Subjects/Chapters/PhysicsChapters.txt
