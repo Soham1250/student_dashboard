@@ -44,7 +44,7 @@ class TopicWiseTestScreen extends StatelessWidget {
                       '/physicsTopics',
                       username,
                       testType,
-                      'physics'),
+                      '2'),
                   _buildSubjectCard(
                       context,
                       'Mathematics',
@@ -52,7 +52,7 @@ class TopicWiseTestScreen extends StatelessWidget {
                       '/mathTopics',
                       username,
                       testType,
-                      'mathematics'),
+                      '1'),
                   _buildSubjectCard(
                       context,
                       'Chemistry',
@@ -60,7 +60,7 @@ class TopicWiseTestScreen extends StatelessWidget {
                       '/chemistryTopics',
                       username,
                       testType,
-                      'chemistry'),
+                      '3'),
                 ],
               ),
             ),
