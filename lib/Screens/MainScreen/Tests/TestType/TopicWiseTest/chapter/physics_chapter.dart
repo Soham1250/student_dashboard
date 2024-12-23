@@ -10,28 +10,36 @@ class PhysicsChapterScreen extends StatelessWidget {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
     final String username = args?['username'] ?? "Unknown";
     final String testType = args?['testType'] ?? "Unknown";
-    final String subjectId = args?['subjectId'] ?? "2"; // Default to 2 if not provided
+    final String subjectId =
+        args?['subjectId'] ?? "2"; // Default to 2 if not provided
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF303030),
+        backgroundColor: Colors.blueAccent,
+        elevation: 0,
         title: const Text(
           'Physics Chapters',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+          ),
         ),
       ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Chapters from Database',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
           ),
           Expanded(

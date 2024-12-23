@@ -16,19 +16,14 @@ class ChapterList extends StatelessWidget {
 
   Future<List<Chapter>> _getChapters() async {
     try {
-      // Convert subjectId to the correct format
       final endpoint = '$baseUrl/getsubjectchapters/${int.parse(subjectId)}';
-      print('Fetching chapters from: $endpoint'); // Debug print
-      
       final response = await _apiService.getRequest(endpoint);
-      print('API Response: $response'); // Debug print
       
       if (response is List) {
         return response.map((json) => Chapter.fromJson(json)).toList();
       }
       throw Exception('Invalid response format');
     } catch (e) {
-      print('Error fetching chapters: $e'); // Debug print
       throw Exception('Failed to fetch chapters: $e');
     }
   }
@@ -38,21 +33,19 @@ class ChapterList extends StatelessWidget {
     return FutureBuilder<List<Chapter>>(
       future: _getChapters(),
       builder: (context, snapshot) {
-        // Debug prints
-        print('Connection state: ${snapshot.connectionState}');
-        if (snapshot.hasError) print('Error: ${snapshot.error}');
-        if (snapshot.hasData) print('Data length: ${snapshot.data?.length}');
-
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(color: Colors.white),
+                CircularProgressIndicator(color: Colors.blueAccent),
                 SizedBox(height: 16),
                 Text(
                   'Loading chapters...',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -73,8 +66,11 @@ class ChapterList extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                  ),
                   onPressed: () {
-                    // Force a rebuild to retry
                     (context as Element).markNeedsBuild();
                   },
                   child: const Text('Retry'),
@@ -89,11 +85,14 @@ class ChapterList extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.book_outlined, color: Colors.white, size: 48),
+                Icon(Icons.book_outlined, color: Colors.blueAccent, size: 48),
                 SizedBox(height: 16),
                 Text(
                   'No chapters available',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -129,23 +128,50 @@ class ChapterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF303030),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(
-          chapter.chapterName,
-          style: const TextStyle(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
             color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+            border: Border.all(
+              color: Colors.blueAccent.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.book_outlined,
+                color: Colors.blueAccent,
+                size: 24,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  chapter.chapterName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.blueAccent,
+                size: 16,
+              ),
+            ],
           ),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, 
-          color: Colors.white, 
-          size: 16,
-        ),
-        onTap: onTap,
       ),
     );
   }

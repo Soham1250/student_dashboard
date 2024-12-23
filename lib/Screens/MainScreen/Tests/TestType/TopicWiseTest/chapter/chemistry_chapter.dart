@@ -10,26 +10,45 @@ class ChemistryChapterScreen extends StatelessWidget {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
     final String username = args?['username'] ?? "Unknown";
     final String testType = args?['testType'] ?? "Unknown";
-    final String subjectId = args?['subjectId'] ?? "3"; // Default to 3 if not provided
+    final String subjectId =
+        args?['subjectId'] ?? "3"; // Default to 3 if not provided
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF303030),
+        backgroundColor: Colors.blueAccent,
+        elevation: 0,
         title: const Text(
           'Chemistry Chapters',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+          ),
         ),
       ),
       body: Column(
         children: [
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+          ),
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'Chapters from Database',
+              'Select a Chapter',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
+                color: Colors.blueAccent,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
