@@ -12,7 +12,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  String _username = "Student"; // Default value
+  String _username = "Soham"; // Default value
 
   @override
   void initState() {
@@ -26,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
 
       if (firstName != null) {
         setState(() {
-          _username = '$firstName ';
+          _username = firstName;
         });
       }
     }

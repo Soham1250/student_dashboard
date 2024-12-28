@@ -4,6 +4,7 @@ import 'dart:async'; // For Timer
 import 'dart:math'; // For min/max functions
 import '../../../../../api/api_service.dart';
 import '../../../../../api/endpoints.dart';
+import '../../TestAnalysis/universal_test_analysis.dart';
 
 class UniversalTestInterface extends StatefulWidget {
   @override
@@ -18,6 +19,8 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   bool _hasInitialized = false; // Add flag to track initialization
   String username = "";
   String testType = "";
+  // ignore: non_constant_identifier_names
+  int UserID = 1;
   String? testId; // Add testId to track the current test
   int currentQuestionIndex = 0;
   DateTime? currentQuestionStartTime;
@@ -78,7 +81,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   Future<void> fetchQuestions() async {
     try {
       final response = await _apiService
-          .postRequest(addQuestionPaperEndpoint, {"testType": testType});
+          .postRequest(addQuestionPaperEndpoint, {"testType": testType, "UserID": UserID});
 
       if (response['addedQuestions'] == null) {
         throw Exception('No questions received from API');
@@ -258,106 +261,70 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
 
   // Final submission
   void _finalSubmit() {
-    // Calculate time for last question
-    if (currentQuestionStartTime != null) {
-      final timeSpent =
-          DateTime.now().difference(currentQuestionStartTime!).inSeconds;
-      questions[currentQuestionIndex]['timeSpent'] =
-          (questions[currentQuestionIndex]['timeSpent'] as int) + timeSpent;
-    }
+    // Calculate final statistics
+    int correctCount = 0;
+    int incorrectCount = 0;
+    int unattemptedCount = 0;
+    Map<String, Map<String, int>> subjectWiseBreakdown = {};
 
-    // Sort questions by original index
-    final sortedQuestions = List<Map<String, dynamic>>.from(questions)
-      ..sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
-
-    // Process questions for analysis
-    final processedQuestions = sortedQuestions.map((q) {
-      final plainUserAnswer =
-          convertHtmlToPlainText(q['userAnswer'] as String?);
-      final plainCorrectAnswer =
-          convertHtmlToPlainText(q['correctAnswer'] as String);
-      final plainOptions = (q['options'] as List<dynamic>)
-          .map((option) => convertHtmlToPlainText(option.toString()))
-          .toList();
-
-      final isCorrect = plainUserAnswer != null &&
-          plainUserAnswer.isNotEmpty &&
-          plainUserAnswer == plainCorrectAnswer;
-
-      return {
-        'index': q['index'] as int,
-        'question': convertHtmlToPlainText(q['question'] as String),
-        'options': plainOptions,
-        'userAnswer': plainUserAnswer,
-        'correctAnswer': plainCorrectAnswer,
-        'markedForReview': q['markedForReview'] as bool,
-        'timeSpent': q['timeSpent'] as int,
-        'confidence': q['confidence'] as double,
-        'answerHistory': (q['answerHistory'] as List<String>)
-            .map((answer) => convertHtmlToPlainText(answer))
-            .toList(),
-        'isCorrect': isCorrect,
-      };
-    }).toList();
-
-    // Prepare analysis data locally
-    final Map<String, dynamic> analysisData = {
-      'correctAnswers': <Map<String, dynamic>>[],
-      'incorrectAnswers': <Map<String, dynamic>>[],
-      'markedReviewUnanswered': <Map<String, dynamic>>[],
-      'markedReviewAnswered': <Map<String, dynamic>>[],
-      'timeAnalysis': {
-        'perQuestion': <int, int>{},
-        'totalTime': totalTime - remainingTime,
-      },
-      'confidenceAnalysis': <int, double>{},
-    };
-
-    // Categorize questions
-    for (var question in processedQuestions) {
-      final originalIndex = question['index'] as int;
-
-      if (question['markedForReview'] as bool) {
-        if (question['userAnswer'] == null ||
-            (question['userAnswer'] as String).isEmpty) {
-          analysisData['markedReviewUnanswered'].add(question);
-        } else {
-          analysisData['markedReviewAnswered'].add(question);
-          if (question['isCorrect'] as bool) {
-            analysisData['correctAnswers'].add(question);
-          } else {
-            analysisData['incorrectAnswers'].add(question);
-          }
-        }
-      } else if (question['userAnswer'] != null &&
-          (question['userAnswer'] as String).isNotEmpty) {
-        if (question['isCorrect'] as bool) {
-          analysisData['correctAnswers'].add(question);
-        } else {
-          analysisData['incorrectAnswers'].add(question);
-        }
+    for (var question in questions) {
+      if (question['userAnswer'] == null) {
+        unattemptedCount++;
+      } else if (question['userAnswer'] == question['correctAnswer']) {
+        correctCount++;
       } else {
-        analysisData['incorrectAnswers'].add(question);
+        incorrectCount++;
       }
 
-      // Record time and confidence
-      analysisData['timeAnalysis']['perQuestion'][originalIndex] =
-          question['timeSpent'] as int;
-      analysisData['confidenceAnalysis'][originalIndex] =
-          question['confidence'] as double;
+      // Track subject-wise performance if subject information is available
+      final subject = question['subject'] as String? ?? 'General';
+      if (!subjectWiseBreakdown.containsKey(subject)) {
+        subjectWiseBreakdown[subject] = {
+          'correct': 0,
+          'incorrect': 0,
+          'unattempted': 0,
+        };
+      }
+
+      if (question['userAnswer'] == null) {
+        subjectWiseBreakdown[subject]!['unattempted'] = 
+            (subjectWiseBreakdown[subject]!['unattempted'] ?? 0) + 1;
+      } else if (question['userAnswer'] == question['correctAnswer']) {
+        subjectWiseBreakdown[subject]!['correct'] = 
+            (subjectWiseBreakdown[subject]!['correct'] ?? 0) + 1;
+      } else {
+        subjectWiseBreakdown[subject]!['incorrect'] = 
+            (subjectWiseBreakdown[subject]!['incorrect'] ?? 0) + 1;
+      }
     }
 
-    // Navigate to analysis screen with local analysis data
-    Navigator.pushNamedAndRemoveUntil(
+    // Prepare test data for analysis
+    final testData = {
+      'questions': questions.map((q) => {
+        ...q,
+        'isCorrect': q['userAnswer'] == q['correctAnswer'],
+        'timeSpent': q['timeSpent'] ?? 0,
+      }).toList(),
+      'subjectWiseBreakdown': subjectWiseBreakdown,
+      'totalTime': totalTime,
+      'timeSpent': totalTime - remainingTime,
+      'statistics': {
+        'correct': correctCount,
+        'incorrect': incorrectCount,
+        'unattempted': unattemptedCount,
+      }
+    };
+
+    // Navigate to the analysis screen
+    Navigator.push(
       context,
-      '/testAnalysis',
-      (route) => false, // Clear the entire stack
-      arguments: {
-        'analysisData': analysisData,
-        'username': username,
-        'testType': testType,
-        'questions': processedQuestions,
-      },
+      MaterialPageRoute(
+        builder: (context) => UniversalTestAnalysis(
+          testData: testData,
+          username: username,
+          testType: testType,
+        ),
+      ),
     );
   }
 

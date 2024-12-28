@@ -27,8 +27,6 @@ import 'Screens/MainScreen/Learn/learn_chapter.dart';
 import 'Screens/MainScreen/Learn/learn_content.dart';
 import 'Screens/MainScreen/Satistics/satistics.dart';
 import 'Screens/MainScreen/Satistics/subject_review.dart';
-import 'Screens/MainScreen/test_analysis.dart';
-import 'Screens/MainScreen/detailed_analysis_screen.dart';
 import 'Screens/MainScreen/Performance/performance.dart';
 import 'Screens/forgot_password.dart';
 import 'Screens/register.dart';
@@ -77,7 +75,8 @@ class StudentDashboardApp extends StatelessWidget {
         // Handling dynamic routes
         onGenerateRoute: (settings) {
           if (settings.name == '/main') {
-            final Map<String, dynamic>? userData = settings.arguments as Map<String, dynamic>?;
+            final Map<String, dynamic>? userData =
+                settings.arguments as Map<String, dynamic>?;
             return MaterialPageRoute(
               builder: (context) {
                 return MainScreen(userData: userData);
@@ -92,7 +91,6 @@ class StudentDashboardApp extends StatelessWidget {
           '/': (context) => LoginPage(),
           '/testSelection': (context) => TestSelectionScreen(),
           '/testInterface': (context) => UniversalTestInterface(),
-          '/detailedanalysis': (context) => DetailedAnalysisScreen(),
 
           // Topic Wise
           '/topicWiseTest': (context) => TopicWiseTestScreen(),
@@ -114,7 +112,6 @@ class StudentDashboardApp extends StatelessWidget {
           '/selectcetyear': (context) => SelectCETyear(),
 
           // Performance and Analysis
-          '/testAnalysis': (context) => TestAnalysisScreen(),
           '/performance': (context) => PerformanceScreen(),
 
           // Statistics
