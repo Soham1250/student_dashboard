@@ -27,6 +27,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   bool isSidebarVisible = false;
   late AnimationController _animationController;
   late Animation<double> _animation;
+  final Color sidebarBackgroundColor = Color(0xFFFCE4EC); // Light pink background
 
   @override
   void initState() {
@@ -436,6 +437,12 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
             ? const Center(child: CircularProgressIndicator())
             : Stack(
                 children: [
+                  // Background container
+                  Container(
+                    color: sidebarBackgroundColor,
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                  ),
                   // Main content area
                   _buildMainContent(),
 
@@ -454,7 +461,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
                               axis: Axis.horizontal,
                               child: Container(
                                 width: 280,
-                                color: Colors.white,
+                                color: sidebarBackgroundColor,
                                 child: _buildSidebar(),
                               ),
                             ),
@@ -490,16 +497,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
                             size: 28,
                           ),
                           padding: const EdgeInsets.all(12),
-                          onPressed: () {
-                            setState(() {
-                              isSidebarVisible = !isSidebarVisible;
-                              if (isSidebarVisible) {
-                                _animationController.forward();
-                              } else {
-                                _animationController.reverse();
-                              }
-                            });
-                          },
+                          onPressed: toggleSidebar,
                           tooltip: isSidebarVisible
                               ? 'Close sidebar'
                               : 'Open sidebar',
@@ -607,95 +605,115 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   }
 
   Widget _buildSidebar() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Questions',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+    return Container(
+      color: sidebarBackgroundColor,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            decoration: BoxDecoration(
+              color: sidebarBackgroundColor,
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey.withOpacity(0.3),
+                  width: 1.0,
                 ),
               ),
-              IconButton(
-                icon: Icon(
-                  isSidebarVisible ? Icons.chevron_right : Icons.chevron_left,
-                ),
-                onPressed: toggleSidebar,
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(8.0),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              childAspectRatio: 1.0,
-              crossAxisSpacing: 4.0,
-              mainAxisSpacing: 4.0,
             ),
-            itemCount: questions.length,
-            itemBuilder: (context, index) {
-              Color buttonColor;
-
-              if (questions[index]['markedForReview'] as bool) {
-                buttonColor = questions[index]['userAnswer'] != null
-                    ? Colors.orange
-                    : Colors.purple;
-              } else {
-                buttonColor = questions[index]['userAnswer'] != null
-                    ? Colors.green
-                    : Colors.red;
-              }
-
-              return ElevatedButton(
-                onPressed: () => navigateToQuestion(index),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: EdgeInsets.zero,
-                ),
-                child: Text(
-                  '${index + 1}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Questions',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
                 ),
-              );
-            },
+                IconButton(
+                  icon: Icon(
+                    isSidebarVisible ? Icons.chevron_right : Icons.chevron_left,
+                    color: Colors.black87,
+                  ),
+                  onPressed: toggleSidebar,
+                ),
+              ],
+            ),
           ),
-        ),
-        const Divider(height: 1, color: Colors.grey),
-        Container(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Question Status',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            child: Container(
+              color: sidebarBackgroundColor,
+              child: GridView.builder(
+                padding: const EdgeInsets.all(12.0),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  childAspectRatio: 1.0,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
                 ),
+                itemCount: questions.length,
+                itemBuilder: (context, index) {
+                  Color buttonColor;
+
+                  if (questions[index]['markedForReview'] as bool) {
+                    buttonColor = questions[index]['userAnswer'] != null
+                        ? Colors.orange
+                        : Colors.purple;
+                  } else {
+                    buttonColor = questions[index]['userAnswer'] != null
+                        ? Colors.green
+                        : Colors.red;
+                  }
+
+                  return ElevatedButton(
+                    onPressed: () => navigateToQuestion(index),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: buttonColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.zero,
+                      elevation: 3,
+                    ),
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 8),
-              _buildLegendItem(Colors.red, 'Not Attempted'),
-              _buildLegendItem(Colors.green, 'Answered'),
-              _buildLegendItem(Colors.purple, 'Marked for Review'),
-              _buildLegendItem(Colors.orange, 'Marked for Review (Answered)'),
-            ],
+            ),
           ),
-        ),
-      ],
+          Container(
+            color: sidebarBackgroundColor,
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Question Status',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildLegendItem(Colors.red, 'Not Attempted'),
+                _buildLegendItem(Colors.green, 'Answered'),
+                _buildLegendItem(Colors.purple, 'Marked for Review'),
+                _buildLegendItem(Colors.orange, 'Marked for Review (Answered)'),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

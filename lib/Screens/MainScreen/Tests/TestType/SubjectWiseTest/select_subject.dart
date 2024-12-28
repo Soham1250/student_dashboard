@@ -20,7 +20,7 @@ class SubjectWiseTest extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Hello, $username\nTest Type: $testType',
+              'Hello, $username\n',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 24,

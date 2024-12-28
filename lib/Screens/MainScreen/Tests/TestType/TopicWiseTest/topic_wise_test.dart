@@ -18,18 +18,6 @@ class TopicWiseTestScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Greeting and Test Type
-            Text(
-              'Hello, $username\nTest Type: $testType',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 30),
-
             // Subject Cards Grid
             Expanded(
               child: GridView.count(

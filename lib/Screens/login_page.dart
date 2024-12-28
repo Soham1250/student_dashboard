@@ -32,7 +32,11 @@ class _LoginPageState extends State<LoginPage> {
       await _apiService.login(loginId, password);
       // Store credentials after successful login
       await _authStorage.saveCredentials(loginId, password);
-      Navigator.pushReplacementNamed(context, '/main', arguments: loginId);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/main',
+        (route) => false, // This removes all previous routes
+      );
     } catch (e) {
       setState(() {
         _errorMessage = 'Server error. Please try again later.';

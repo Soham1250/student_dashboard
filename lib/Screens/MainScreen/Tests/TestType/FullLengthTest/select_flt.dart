@@ -11,7 +11,7 @@ class SelectFLTScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Full Length Test Selection \nUsername: $username, Test Type: $testType',
+          'Full Length Test Selection',
           textAlign: TextAlign.center,
         ),
         backgroundColor: Colors.blueAccent,

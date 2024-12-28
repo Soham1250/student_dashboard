@@ -5,7 +5,8 @@ class LearnScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final String username = args['username'] as String? ?? 'Unknown';
     double screenWidth = MediaQuery.of(context).size.width;
 
@@ -44,14 +45,8 @@ class LearnScreen extends StatelessWidget {
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
                 children: [
-                  _buildSubjectButton(
-                    context,
-                    'assets/images/physics.png',
-                    screenWidth,
-                    username,
-                    '2',
-                    'Physics'
-                  ),
+                  _buildSubjectButton(context, 'assets/images/physics.png',
+                      screenWidth, username, '2', 'Physics'),
                   _buildSubjectButton(
                     context,
                     'assets/images/chemistry.png',

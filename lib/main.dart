@@ -14,7 +14,6 @@ import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/chapter/math_chapter.dar
 import 'Screens/MainScreen/Tests/TestType/TopicWiseTest/select_topicwise_difficulty.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subject.dart';
 import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subjectwise_difficulty.dart';
-import 'Screens/MainScreen/Tests/TestType/SubjectWiseTest/select_subjectwise_test.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/select_flt.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/Mock/select_flt_test.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/MHT CET/select_year.dart';
@@ -70,6 +69,7 @@ class StudentDashboardApp extends StatelessWidget {
         // Add more providers here as needed
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Student Dashboard',
         theme: ThemeData(
           primarySwatch: Colors.brown,
@@ -106,7 +106,6 @@ class StudentDashboardApp extends StatelessWidget {
           '/subjectWise': (context) => SubjectWiseTest(),
           '/selectSubjectWiseDifficulty': (context) =>
               SelectSubjectWiseDifficultyScreen(),
-          '/selectSubjectWiseTest': (context) => SelectSubjectWiseTest(),
           '/subjectwisetestinterface': (context) => UniversalTestInterface(),
 
           // Full Length Test
