@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../api/api_service.dart';
-import '../../api/endpoints.dart';
 import '../profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -15,7 +13,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   String _username = "Student"; // Default value
-  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -26,11 +23,10 @@ class _MainScreenState extends State<MainScreen> {
   void _setUsername() {
     if (widget.userData != null) {
       final firstName = widget.userData!['FirstName'] as String?;
-      final lastName = widget.userData!['LastName'] as String?;
 
-      if (firstName != null && lastName != null) {
+      if (firstName != null) {
         setState(() {
-          _username = '$firstName $lastName';
+          _username = '$firstName ';
         });
       }
     }
