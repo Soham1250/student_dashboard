@@ -25,6 +25,7 @@ import 'Screens/MainScreen/Feedback/feedback.dart';
 import 'Screens/MainScreen/Learn/learn.dart';
 import 'Screens/MainScreen/Learn/learn_subject.dart';
 import 'Screens/MainScreen/Learn/learn_chapter.dart';
+import 'Screens/MainScreen/Learn/learn_content.dart';
 import 'Screens/MainScreen/Satistics/satistics.dart';
 import 'Screens/MainScreen/Satistics/subject_review.dart';
 import 'Screens/MainScreen/test_analysis.dart';
@@ -125,6 +126,7 @@ class StudentDashboardApp extends StatelessWidget {
           '/learn': (context) => LearnScreen(),
           '/learnsubject': (context) => LearnSubjectScreen(),
           '/learnchapter': (context) => LearnChapterScreen(),
+          '/learnContent': (context) => LearnContentScreen(),
 
           // Feedback
           '/feedback': (context) => FeedbackScreen(),

@@ -1,39 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:student_dashboard/widgets/chapter_list.dart';
 
 class LearnChapterScreen extends StatelessWidget {
+  const LearnChapterScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
-    final String username = args?['username'] ?? 'Unknown';
-    final String subjectID = args?['subjectID'] ?? 'Unknown';
-    final String chapterID = args?['chapterID'] ?? 'Unknown';
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final String username = args['username'] as String? ?? 'Unknown';
+    final String subjectID = args['subjectID'] as String? ?? 'Unknown';
+    final String subjectName = args['subjectName'] as String? ?? 'Unknown';
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('$chapterID in $subjectID', style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.blueAccent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Hello, $username',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'You are learning $chapterID in $subjectID.',
-              style: const TextStyle(fontSize: 18, color: Colors.black54),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Content for $chapterID goes here...',
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
-            ),
-          ],
+        title: Text(
+          '$subjectName Chapters',
+          style: const TextStyle(color: Colors.white),
         ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ChapterList(
+              subjectId: subjectID,
+              onChapterTap: (chapter) {
+                Navigator.pushNamed(
+                  context,
+                  '/learnContent',
+                  arguments: {
+                    'username': username,
+                    'subjectName': subjectName,
+                    'chapterName': chapter.chapterName,
+                    'chapterId': chapter.chapterId,
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

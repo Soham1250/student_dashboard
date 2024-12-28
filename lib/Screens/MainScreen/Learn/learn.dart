@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 class LearnScreen extends StatelessWidget {
+  const LearnScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
-    final String username = args?['username'] ?? 'Unknown';
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final String username = args['username'] as String? ?? 'Unknown';
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -45,39 +46,28 @@ class LearnScreen extends StatelessWidget {
                 children: [
                   _buildSubjectButton(
                     context,
-                    '/learnsubject',
-                    'assets/images/physics.png', // Path to the physics image
+                    'assets/images/physics.png',
                     screenWidth,
                     username,
-                    'physics',
+                    '2',
                     'Physics'
                   ),
                   _buildSubjectButton(
                     context,
-                    '/learnsubject',
-                    'assets/images/chemistry.png', // Path to the chemistry image
+                    'assets/images/chemistry.png',
                     screenWidth,
                     username,
-                    'chemistry',
+                    '3',
                     'Chemistry',
                   ),
                   _buildSubjectButton(
                     context,
-                    '/learnsubject',
-                    'assets/images/maths.png', // Path to the mathematics image
+                    'assets/images/maths.png',
                     screenWidth,
                     username,
-                    'mathematics',
-                    'Maths',
+                    '1',
+                    'Mathematics',
                   ),
-                  // _buildSubjectButton(
-                  //   context,
-                  //   '/learnsubject',
-                  //   'assets/images/biology.png', // Path to the biology image
-                  //   screenWidth,
-                  //   username,
-                  //   'Biology',
-                  // ),
                 ],
               ),
             ),
@@ -89,8 +79,7 @@ class LearnScreen extends StatelessWidget {
 
   Widget _buildSubjectButton(
     BuildContext context,
-    String route,
-    String imagePath, // Path to the image
+    String imagePath,
     double screenWidth,
     String username,
     String subjectID,
@@ -100,10 +89,15 @@ class LearnScreen extends StatelessWidget {
       width: screenWidth * 0.4,
       child: ElevatedButton(
         onPressed: () {
-          Navigator.pushNamed(context, route, arguments: {
-            'username': username,
-            'subjectID': subjectID,
-          });
+          Navigator.pushNamed(
+            context,
+            '/learnchapter',
+            arguments: {
+              'username': username,
+              'subjectID': subjectID,
+              'subjectName': subject,
+            } as Map<String, dynamic>,
+          );
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 20),
@@ -118,14 +112,18 @@ class LearnScreen extends StatelessWidget {
           children: [
             Image.asset(
               imagePath,
-              width: 100, // Adjust the size as needed
+              width: 100,
               height: 100,
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 10),
             Text(
               subject,
-              style: const TextStyle(color: Colors.black, fontSize: 16,fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
