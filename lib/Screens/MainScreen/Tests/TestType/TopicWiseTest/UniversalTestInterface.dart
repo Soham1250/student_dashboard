@@ -27,7 +27,8 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   bool isSidebarVisible = false;
   late AnimationController _animationController;
   late Animation<double> _animation;
-  final Color sidebarBackgroundColor = Color(0xFFFCE4EC); // Light pink background
+  final Color sidebarBackgroundColor =
+      Color(0xFFFCE4EC); // Light pink background
 
   @override
   void initState() {
@@ -417,9 +418,43 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
 
   @override
   Widget build(BuildContext context) {
-    // ignore: deprecated_member_use
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    // Replace WillPopScope with PopScope
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          return;
+        }
+
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Exit Test?'),
+              content: const Text(
+                  'Are you sure you want to exit the test? Your progress will be lost.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('No'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                    Navigator.of(context).pop(); // Return to previous screen
+                  },
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (shouldPop ?? false) {
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pop();
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text("$testType Test"),
@@ -559,58 +594,14 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
     );
   }
 
-  Future<bool> _onWillPop() async {
-    // First, check if sidebar is open
-    if (isSidebarVisible) {
-      setState(() {
-        isSidebarVisible = false;
-        _animationController.reverse();
-      });
-      return false;
-    }
-
-    // Show confirmation dialog
-    return await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Exit Test?'),
-              content: const Text(
-                'Are you sure you want to exit the test? Your progress will be lost.',
-                style: TextStyle(fontSize: 16),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: const Text('CANCEL'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  // ignore: sort_child_properties_last
-                  child: const Text('EXIT'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.red,
-                  ),
-                ),
-              ],
-            );
-          },
-        ) ??
-        false; // Return false if dialog is dismissed
-  }
-
   Widget _buildSidebar() {
     return Container(
       color: sidebarBackgroundColor,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             decoration: BoxDecoration(
               color: sidebarBackgroundColor,
               border: Border(

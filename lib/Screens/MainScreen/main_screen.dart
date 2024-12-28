@@ -35,14 +35,41 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Future<bool> _onWillPop() async {
-    return false; // Prevents back navigation
-  }
-
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      // ignore: deprecated_member_use
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          return;
+        }
+        // Show exit confirmation dialog
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Do you want to exit the app?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                  SystemNavigator.pop(); // This will close the app
+                },
+                child: const Text('Yes'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldExit ?? false) {
+          SystemNavigator.pop(); // This will close the app
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Main Dashboard',
@@ -89,8 +116,8 @@ class _MainScreenState extends State<MainScreen> {
                           '/testSelection', Colors.orange),
                       _buildGridButton('Performance', Icons.bar_chart, context,
                           '/performance', Colors.green),
-                      _buildGridButton('Statistics', Icons.insert_chart, context,
-                          '/statistics', Colors.blue),
+                      _buildGridButton('Statistics', Icons.insert_chart,
+                          context, '/statistics', Colors.blue),
                       _buildGridButton(
                           'Learn', Icons.school, context, '/learn', Colors.red),
                       _buildGridButton('Feedback', Icons.feedback, context,
