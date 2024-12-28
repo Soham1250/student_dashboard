@@ -48,7 +48,7 @@ dependencies:
   # JSON Serialization for API responses
   json_serializable: ^6.5.4
 
-  # SharedPreferences for saving responses locally
+  # Local storage for user data and settings
   shared_preferences: ^2.2.2
 
   # Icons (if additional Cupertino-style icons are needed)

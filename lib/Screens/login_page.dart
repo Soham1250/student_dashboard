@@ -14,9 +14,13 @@ class _LoginPageState extends State<LoginPage> {
   String _errorMessage = '';
   bool _isPasswordVisible = false;
   bool _isLoading = false;
-  bool _receiveUpdates = false; // New state variable for checkbox
   final ApiService _apiService = ApiService();
   final AuthStorageService _authStorage = AuthStorageService();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   // Method to handle login with API
   void _login() async {
@@ -29,13 +33,16 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      await _apiService.login(loginId, password);
+      final response = await _apiService.login(loginId, password);
       // Store credentials after successful login
       await _authStorage.saveCredentials(loginId, password);
+      
+      // Navigate to main screen with user data
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/main',
-        (route) => false, // This removes all previous routes
+        (route) => false,
+        arguments: response, // Pass the entire response
       );
     } catch (e) {
       setState(() {
@@ -126,36 +133,6 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // Checkbox for SAKEC updates
-              // Note: To make this checkbox mandatory in the future:
-              // 1. Add validation in the _login() method:
-              //    if (!_receiveUpdates) {
-              //      setState(() {
-              //        _errorMessage = 'Please agree to receive updates from SAKEC';
-              //      });
-              //      return;
-              //    }
-              // 2. You can also visually indicate it's required by adding a red asterisk to the text
-
-              CheckboxListTile(
-                title: const Text(
-                  'Send me updates from SAKEC',
-                  style: TextStyle(
-                    color: Colors.blueAccent,
-                    fontSize: 14,
-                  ),
-                ),
-                value: _receiveUpdates,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _receiveUpdates = value ?? false;
-                  });
-                },
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
               ),
               const SizedBox(height: 20),
 

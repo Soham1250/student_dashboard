@@ -14,16 +14,34 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
-  bool _receiveUpdates = false; // New state variable for checkbox
+  bool _receiveUpdates = false;
 
   String _errorMessage = '';
   bool _isLoading = false;
   bool _isOtpFieldVisible = false;
   bool _isEmailVerified = false;
 
+  // New method to check if registration is allowed
+  bool _isRegistrationAllowed() {
+    return _isFormValid() && _receiveUpdates && _isEmailVerified;
+  }
+
+  // Method to get helper text for registration requirements
+  String _getRegistrationHelperText() {
+    if (!_isEmailVerified) {
+      return 'Please verify your email to continue';
+    }
+    if (!_receiveUpdates) {
+      return 'Please accept to receive updates from SAKEC';
+    }
+    if (!_isFormValid()) {
+      return 'Please fill in all required fields';
+    }
+    return '';
+  }
+
   void _updateFormValidity() {
-    setState(
-        () {}); // Triggers a rebuild to update the register button's enabled/disabled state
+    setState(() {}); // Triggers a rebuild to update the register button's enabled/disabled state
   }
 
   Future<void> _sendOtp() async {
@@ -78,10 +96,9 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-// Method to validate if form fields are filled and email is verified
+  // Method to validate if form fields are filled and email is verified
   bool _isFormValid() {
-    return _isEmailVerified &&
-        _firstNameController.text.trim().isNotEmpty &&
+    return _firstNameController.text.trim().isNotEmpty &&
         _lastNameController.text.trim().isNotEmpty &&
         _emailController.text.trim().isNotEmpty &&
         _passwordController.text.trim().isNotEmpty &&
@@ -89,7 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register() async {
-    if (!_isFormValid()) {
+    if (!_isRegistrationAllowed()) {
       setState(() {
         _errorMessage = 'Please fill in all the fields and verify your email.';
       });
@@ -342,73 +359,100 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             const SizedBox(height: 20),
 
+            // Checkbox for SAKEC updates with required indicator
             CheckboxListTile(
-              title: const Text(
-                'Send me updates from SAKEC',
-                style: TextStyle(
-                  color: Colors.blueAccent,
-                  fontSize: 14,
-                ),
+              title: Row(
+                children: [
+                  const Text(
+                    'Send me updates from SAKEC',
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '*',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
               value: _receiveUpdates,
               onChanged: (bool? value) {
                 setState(() {
                   _receiveUpdates = value ?? false;
+                  _updateFormValidity();
                 });
               },
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
+              activeColor: Colors.teal,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
-            // Error message
-            if (_errorMessage.isNotEmpty)
-              Text(
-                _errorMessage,
-                style: const TextStyle(
-                    color: Colors.red, fontWeight: FontWeight.bold),
+            // Helper text for registration requirements
+            if (_getRegistrationHelperText().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  _getRegistrationHelperText(),
+                  style: TextStyle(
+                    color: Colors.red[700],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            const SizedBox(height: 20),
 
-            // Register Button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[400],
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 30),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+            // Display error message if present
+            if (_errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  _errorMessage,
+                  style: TextStyle(
+                    color: _isEmailVerified ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: const Text('< Back',
-                      style: TextStyle(color: Colors.white)),
                 ),
-                ElevatedButton(
-                  onPressed: _isFormValid() && !_isLoading
-                      ? _register
-                      : null, // Enable only if form is valid
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isFormValid()
-                        ? Colors.teal
-                        : Colors.grey, // Show grey when disabled
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 30),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+              ),
+
+            // Register button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isRegistrationAllowed() ? _register : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  disabledBackgroundColor: Colors.grey[300],
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : const Text('Register >',
-                          style: TextStyle(color: Colors.white)),
                 ),
-              ],
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Register',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: _isRegistrationAllowed()
+                              ? Colors.white
+                              : Colors.grey[600],
+                        ),
+                      ),
+              ),
             ),
           ],
         ),

@@ -77,9 +77,10 @@ class StudentDashboardApp extends StatelessWidget {
         // Handling dynamic routes
         onGenerateRoute: (settings) {
           if (settings.name == '/main') {
+            final Map<String, dynamic>? userData = settings.arguments as Map<String, dynamic>?;
             return MaterialPageRoute(
               builder: (context) {
-                return MainScreen(); // Pass the username to MainScreen
+                return MainScreen(userData: userData);
               },
             );
           }
@@ -89,7 +90,6 @@ class StudentDashboardApp extends StatelessWidget {
         initialRoute: isLoggedIn ? '/main' : '/',
         routes: {
           '/': (context) => LoginPage(),
-          '/main': (context) => MainScreen(),
           '/testSelection': (context) => TestSelectionScreen(),
           '/testInterface': (context) => UniversalTestInterface(),
           '/detailedanalysis': (context) => DetailedAnalysisScreen(),

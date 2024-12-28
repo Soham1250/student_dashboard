@@ -5,24 +5,35 @@ import '../../api/endpoints.dart';
 import '../profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
+  final Map<String, dynamic>? userData;
+
+  const MainScreen({Key? key, this.userData}) : super(key: key);
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  String _username = "Student"; // Default value while loading
-  final ApiService _apiService = ApiService(); // Initialize API service
+  String _username = "Student"; // Default value
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
-    fetchUsername();
+    _setUsername();
   }
 
-  Future<void> fetchUsername() async {
-    setState(() {
-      _username = 'Soham'; // Always set to Soham
-    });
+  void _setUsername() {
+    if (widget.userData != null) {
+      final firstName = widget.userData!['FirstName'] as String?;
+      final lastName = widget.userData!['LastName'] as String?;
+
+      if (firstName != null && lastName != null) {
+        setState(() {
+          _username = '$firstName $lastName';
+        });
+      }
+    }
   }
 
   void _navigateToProfile() {
