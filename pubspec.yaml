@@ -39,8 +39,8 @@ dependencies:
   # Graphing/Analysis (if needed in the future for test analysis)
   fl_chart: ^0.69.0 
 
-  # HTML rendering for questions
-  flutter_html: 3.0.0-beta.2
+  # HTML and LaTeX rendering
+  flutter_tex: ^4.0.13
 
   # Date/Time Formatting (if required for timer and other calculations)
   intl: ^0.20.0
@@ -53,6 +53,7 @@ dependencies:
 
   # Icons (if additional Cupertino-style icons are needed)
   cupertino_icons: ^1.0.8
+  flutter_html: ^3.0.0-beta.2
 
 
 dev_dependencies:

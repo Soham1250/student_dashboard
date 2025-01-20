@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_tex/flutter_tex.dart';
 
 class UniversalTestAnalysis extends StatefulWidget {
   final Map<String, dynamic> testData;
@@ -233,6 +234,39 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
     );
   }
 
+  Widget _buildTeXView(String content) {
+    // Check if content contains LaTeX
+    if (content.contains('\$') || content.contains('\\[') || content.contains('\\(')) {
+      return TeXView(
+        child: TeXViewDocument(
+          content,
+          style: TeXViewStyle(
+            contentColor: Colors.black87,
+            backgroundColor: Colors.transparent,
+            padding: TeXViewPadding.all(8),
+          ),
+        ),
+        style: TeXViewStyle(
+          elevation: 0,
+          borderRadius: TeXViewBorderRadius.all(0),
+          backgroundColor: Colors.transparent,
+        ),
+      );
+    }
+    
+    // If no LaTeX, use regular HTML
+    return Html(
+      data: content,
+      style: {
+        "body": Style(
+          fontSize: FontSize(16),
+          margin: Margins.zero,
+          padding: HtmlPaddings.zero,
+        ),
+      },
+    );
+  }
+
   Widget _buildQuestionList(String title, List<Map<String, dynamic>> questions, Color color) {
     if (questions.isEmpty) return const SizedBox.shrink();
 
@@ -296,16 +330,7 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
                                     color: Colors.grey[100],
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Html(
-                                    data: question['question'] as String,
-                                    style: {
-                                      "body": Style(
-                                        fontSize: FontSize(16),
-                                        margin: Margins.zero,
-                                        padding: HtmlPaddings.zero,
-                                      ),
-                                    },
-                                  ),
+                                  child: _buildTeXView(question['question'] as String),
                                 ),
                                 const SizedBox(height: 16),
                                 if (question['userAnswer'] != null) ...[
@@ -331,15 +356,7 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
                                             : Colors.red,
                                       ),
                                     ),
-                                    child: Text(
-                                      convertHtmlToPlainText(question['userAnswer'] as String),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: question['isCorrect'] as bool
-                                            ? Colors.green[900]
-                                            : Colors.red[900],
-                                      ),
-                                    ),
+                                    child: _buildTeXView(question['userAnswer'] as String),
                                   ),
                                   const SizedBox(height: 16),
                                 ],
@@ -359,13 +376,7 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(color: Colors.green),
                                   ),
-                                  child: Text(
-                                    convertHtmlToPlainText(question['correctAnswer'] as String),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.green[900],
-                                    ),
-                                  ),
+                                  child: _buildTeXView(question['correctAnswer'] as String),
                                 ),
                                 const SizedBox(height: 16),
                                 Container(

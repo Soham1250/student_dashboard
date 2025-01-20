@@ -1,0 +1,220 @@
+{
+    "username": "student123",
+    "testType": "Topic-wise",
+    "analysisData": {
+        "correctAnswers": [
+            {
+                "index": 0,
+                "question": "If a² + b² = 25 and ab = 12, find the value of (a + b)².",
+                "options": [
+                    "1",
+                    "49",
+                    "25",
+                    "13"
+                ],
+                "userAnswer": "B",
+                "correctAnswer": "B",
+                "markedForReview": false,
+                "timeSpent": 85,
+                "confidence": 90.0,
+                "answerHistory": ["B"],
+                "isCorrect": true
+            },
+            {
+                "index": 2,
+                "question": "The pH of a solution is 4.5. What is the H+ ion concentration?",
+                "options": [
+                    "3.16 × 10⁻⁵ M",
+                    "3.16 × 10⁻⁴ M",
+                    "3.16 × 10⁻³ M",
+                    "3.16 × 10⁻² M"
+                ],
+                "userAnswer": "A",
+                "correctAnswer": "A",
+                "markedForReview": true,
+                "timeSpent": 145,
+                "confidence": 60.0,
+                "answerHistory": ["C", "B", "A"],
+                "isCorrect": true
+            }
+        ],
+        "incorrectAnswers": [
+            {
+                "index": 1,
+                "question": "Which of the following is not a type of chemical bond?",
+                "options": [
+                    "Ionic bond",
+                    "Covalent bond",
+                    "Magnetic bond",
+                    "Hydrogen bond"
+                ],
+                "userAnswer": "D",
+                "correctAnswer": "C",
+                "markedForReview": false,
+                "timeSpent": 65,
+                "confidence": 85.0,
+                "answerHistory": ["D"],
+                "isCorrect": false
+            },
+            {
+                "index": 4,
+                "question": "What is the value of sin²θ + cos²θ?",
+                "options": [
+                    "0",
+                    "1",
+                    "2",
+                    "Depends on θ"
+                ],
+                "userAnswer": null,
+                "correctAnswer": "B",
+                "markedForReview": false,
+                "timeSpent": 0,
+                "confidence": 0.0,
+                "answerHistory": [],
+                "isCorrect": false
+            }
+        ],
+        "markedReviewUnanswered": [
+            {
+                "index": 3,
+                "question": "Which scientist proposed the quantum theory?",
+                "options": [
+                    "Albert Einstein",
+                    "Max Planck",
+                    "Niels Bohr",
+                    "Werner Heisenberg"
+                ],
+                "userAnswer": null,
+                "correctAnswer": "B",
+                "markedForReview": true,
+                "timeSpent": 30,
+                "confidence": 20.0,
+                "answerHistory": [],
+                "isCorrect": false
+            }
+        ],
+        "markedReviewAnswered": [
+            {
+                "index": 2,
+                "question": "The pH of a solution is 4.5. What is the H+ ion concentration?",
+                "options": [
+                    "3.16 × 10⁻⁵ M",
+                    "3.16 × 10⁻⁴ M",
+                    "3.16 × 10⁻³ M",
+                    "3.16 × 10⁻² M"
+                ],
+                "userAnswer": "A",
+                "correctAnswer": "A",
+                "markedForReview": true,
+                "timeSpent": 145,
+                "confidence": 60.0,
+                "answerHistory": ["C", "B", "A"],
+                "isCorrect": true
+            }
+        ],
+        "timeAnalysis": {
+            "perQuestion": {
+                "0": 85,
+                "1": 65,
+                "2": 145,
+                "3": 30,
+                "4": 0
+            },
+            "totalTime": 325
+        },
+        "confidenceAnalysis": {
+            "0": 90.0,
+            "1": 85.0,
+            "2": 60.0,
+            "3": 20.0,
+            "4": 0.0
+        }
+    },
+    "questions": [
+        {
+            "index": 0,
+            "question": "If a² + b² = 25 and ab = 12, find the value of (a + b)².",
+            "options": [
+                "1",
+                "49",
+                "25",
+                "13"
+            ],
+            "userAnswer": "B",
+            "correctAnswer": "B",
+            "markedForReview": false,
+            "timeSpent": 85,
+            "confidence": 90.0,
+            "answerHistory": ["B"],
+            "isCorrect": true
+        },
+        {
+            "index": 1,
+            "question": "Which of the following is not a type of chemical bond?",
+            "options": [
+                "Ionic bond",
+                "Covalent bond",
+                "Magnetic bond",
+                "Hydrogen bond"
+            ],
+            "userAnswer": "D",
+            "correctAnswer": "C",
+            "markedForReview": false,
+            "timeSpent": 65,
+            "confidence": 85.0,
+            "answerHistory": ["D"],
+            "isCorrect": false
+        },
+        {
+            "index": 2,
+            "question": "The pH of a solution is 4.5. What is the H+ ion concentration?",
+            "options": [
+                "3.16 × 10⁻⁵ M",
+                "3.16 × 10⁻⁴ M",
+                "3.16 × 10⁻³ M",
+                "3.16 × 10⁻² M"
+            ],
+            "userAnswer": "A",
+            "correctAnswer": "A",
+            "markedForReview": true,
+            "timeSpent": 145,
+            "confidence": 60.0,
+            "answerHistory": ["C", "B", "A"],
+            "isCorrect": true
+        },
+        {
+            "index": 3,
+            "question": "Which scientist proposed the quantum theory?",
+            "options": [
+                "Albert Einstein",
+                "Max Planck",
+                "Niels Bohr",
+                "Werner Heisenberg"
+            ],
+            "userAnswer": null,
+            "correctAnswer": "B",
+            "markedForReview": true,
+            "timeSpent": 30,
+            "confidence": 20.0,
+            "answerHistory": [],
+            "isCorrect": false
+        },
+        {
+            "index": 4,
+            "question": "What is the value of sin²θ + cos²θ?",
+            "options": [
+                "0",
+                "1",
+                "2",
+                "Depends on θ"
+            ],
+            "userAnswer": null,
+            "correctAnswer": "B",
+            "markedForReview": false,
+            "timeSpent": 0,
+            "confidence": 0.0,
+            "answerHistory": [],
+            "isCorrect": false
+        }
+    ]
+}

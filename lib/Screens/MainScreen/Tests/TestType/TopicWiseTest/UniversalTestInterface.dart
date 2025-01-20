@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'dart:async'; // For Timer
-import 'dart:math'; // For min/max functions
+import 'package:flutter_tex/flutter_tex.dart';
+import 'dart:async';
+import 'dart:math';
 import '../../../../../api/api_service.dart';
 import '../../../../../api/endpoints.dart';
 import '../../TestAnalysis/universal_test_analysis.dart';
@@ -561,6 +562,39 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
     );
   }
 
+  Widget _buildTeXView(String content) {
+    // Check if content contains LaTeX
+    if (content.contains('\$') || content.contains('\\[') || content.contains('\\(')) {
+      return TeXView(
+        child: TeXViewDocument(
+          content,
+          style: TeXViewStyle(
+            contentColor: Colors.black87,
+            backgroundColor: Colors.transparent,
+            padding: TeXViewPadding.all(8),
+          ),
+        ),
+        style: TeXViewStyle(
+          elevation: 0,
+          borderRadius: TeXViewBorderRadius.all(0),
+          backgroundColor: Colors.transparent,
+        ),
+      );
+    }
+    
+    // If no LaTeX, use regular HTML
+    return Html(
+      data: content,
+      style: {
+        "body": Style(
+          fontSize: FontSize(16),
+          margin: Margins.zero,
+          padding: HtmlPaddings.zero,
+        ),
+      },
+    );
+  }
+
   Widget _buildSidebar() {
     return Container(
       color: sidebarBackgroundColor,
@@ -694,16 +728,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
             ),
           ),
           const SizedBox(height: 10),
-          Html(
-            data: questions[currentQuestionIndex]['question'] as String,
-            style: {
-              "body": Style(
-                fontSize: FontSize(16.0),
-                margin: Margins.zero,
-                // padding: EdgeInsets.zero,
-              ),
-            },
-          ),
+          _buildTeXView(questions[currentQuestionIndex]['question'] as String),
           const SizedBox(height: 20),
           ...(questions[currentQuestionIndex]['options'] as List<String>)
               .asMap()
@@ -723,15 +748,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
                   groupValue: questions[currentQuestionIndex]['userAnswer'],
                   onChanged: selectAnswer,
                 ),
-                title: Html(
-                  data: option,
-                  style: {
-                    "body": Style(
-                      fontSize: FontSize(14.0),
-                      margin: Margins.zero,
-                    ),
-                  },
-                ),
+                title: _buildTeXView(option),
               ),
             );
           }).toList(),
