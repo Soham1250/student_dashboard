@@ -18,8 +18,10 @@ import 'Screens/MainScreen/Tests/TestType/FullLengthTest/select_flt.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/Mock/select_flt_test.dart';
 import 'Screens/MainScreen/Tests/TestType/FullLengthTest/MHT CET/select_year.dart';
 import 'Screens/MainScreen/Grievance/grievance.dart';
+import 'Screens/MainScreen/Grievance/GrievanceType.dart';
+import 'Screens/MainScreen/Grievance/TestBasedGrievance.dart';
 import 'Screens/MainScreen/Grievance/manage_grievance.dart';
-import 'Screens/MainScreen/Grievance/new_greivance.dart';
+import 'Screens/MainScreen/Grievance/new_grievance.dart';
 import 'Screens/MainScreen/Feedback/feedback.dart';
 import 'Screens/MainScreen/Learn/learn.dart';
 import 'Screens/MainScreen/Learn/learn_subject.dart';
@@ -129,6 +131,8 @@ class StudentDashboardApp extends StatelessWidget {
 
           // Grievances
           '/grievance': (context) => GrievancePortal(),
+          '/grievanceType': (context) => GrievanceType(),
+          '/testBasedGrievance': (context) => TestBasedGrievance(),
           '/manageGrievance': (context) => ManageGrievanceScreen(),
           '/newGrievance': (context) => NewGrievanceScreen(),
 

@@ -86,55 +86,110 @@ class _MainScreenState extends State<MainScreen> {
           automaticallyImplyLeading: false, // This removes the back button
         ),
         body: Container(
-          color: const Color.fromARGB(221, 40, 8, 26), // Dark background color
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: _navigateToProfile,
-                      child: CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.deepPurple[100],
-                        child: const Icon(Icons.person,
-                            size: 40, color: Colors.deepPurple),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Text(
-                      'Hello, $_username',
-                      style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                Expanded(
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 15,
-                    mainAxisSpacing: 15,
-                    children: [
-                      _buildGridButton('Tests', Icons.assignment, context,
-                          '/testSelection', Colors.orange),
-                      _buildGridButton('Performance', Icons.bar_chart, context,
-                          '/performance', Colors.green),
-                      _buildGridButton('Statistics', Icons.insert_chart,
-                          context, '/statistics', Colors.blue),
-                      _buildGridButton(
-                          'Learn', Icons.school, context, '/learn', Colors.red),
-                      _buildGridButton('Feedback', Icons.feedback, context,
-                          '/feedback', Colors.purple),
-                      _buildGridButton('Grievances', Icons.report_problem,
-                          context, '/grievance', Colors.teal),
-                    ],
-                  ),
-                ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.deepPurple,
+                Colors.deepPurple.shade100,
               ],
+              stops: [0.0, 0.3],
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  // Profile Card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: _navigateToProfile,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.deepPurple,
+                                width: 2,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 35,
+                              backgroundColor: Colors.deepPurple.shade50,
+                              child: const Icon(
+                                Icons.person,
+                                size: 35,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Welcome back',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              _username,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  // Grid of Options
+                  Expanded(
+                    child: GridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 15,
+                      mainAxisSpacing: 15,
+                      children: [
+                        _buildGridButton('Tests', Icons.assignment, context,
+                            '/testSelection', Colors.orange.shade400),
+                        _buildGridButton('Performance', Icons.bar_chart, context,
+                            '/performance', Colors.green.shade400),
+                        _buildGridButton('Statistics', Icons.insert_chart,
+                            context, '/statistics', Colors.blue.shade400),
+                        _buildGridButton(
+                            'Learn', Icons.school, context, '/learn', Colors.red.shade400),
+                        _buildGridButton('Feedback', Icons.feedback, context,
+                            '/feedback', Colors.purple.shade400),
+                        _buildGridButton('Grievances', Icons.report_problem,
+                            context, '/grievance', Colors.teal.shade400),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -144,28 +199,44 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildGridButton(String label, IconData icon, BuildContext context,
       String route, Color color) {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.pushNamed(context, route, arguments: {'username': _username});
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: const EdgeInsets.all(20),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        elevation: 5,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 40, color: Colors.white),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 18, color: Colors.white),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
+      ),
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.pushNamed(context, route, arguments: {'username': _username});
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          padding: const EdgeInsets.all(20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 0,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: color),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

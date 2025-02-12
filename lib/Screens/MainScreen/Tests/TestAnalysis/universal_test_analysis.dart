@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_tex/flutter_tex.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 
 class UniversalTestAnalysis extends StatefulWidget {
   final Map<String, dynamic> testData;
@@ -89,57 +89,167 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
     }
 
     // Calculate average confidence only from correct answers
-    averageConfidence = correctQuestionsCount > 0 ? totalConfidence / correctQuestionsCount : 0.0;
+    averageConfidence = correctQuestionsCount > 0
+        ? totalConfidence / correctQuestionsCount
+        : 0.0;
     averageTimePerQuestion = timeAnalysis['totalTime'] / totalQuestions;
-    accuracy = (categorizedQuestions['correctAnswers']!.length / totalQuestions) * 100;
+    accuracy =
+        (categorizedQuestions['correctAnswers']!.length / totalQuestions) * 100;
+  }
+
+  String _processLatexContent(String content) {
+    // First extract the LaTeX content
+    RegExp dataValueRegex = RegExp(r'data-value="([^"]*)"');
+    var match = dataValueRegex.firstMatch(content);
+    String latexContent = match?.group(1) ?? content;
+
+    // Decode HTML entities
+    latexContent = latexContent
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>');
+
+    // Process matrices
+    if (latexContent.contains('\\begin{matrix}')) {
+      latexContent = latexContent
+          .replaceAll('amp;', '') // Remove amp;
+          .replaceAll(r'\begin{matrix}', r'\begin{bmatrix}')
+          .replaceAll(r'\end{matrix}', r'\end{bmatrix}');
+    }
+
+    // Handle fractions
+    RegExp fractionRegex = RegExp(r'(\d+)/([a-zA-Z])');
+    latexContent = latexContent.replaceAllMapped(
+      fractionRegex,
+      (match) => r'\frac{${match[1]}}{${match[2]}}',
+    );
+
+    // Handle subscripts and superscripts
+    latexContent = latexContent
+        .replaceAll('_', '_{')
+        .replaceAll('^', '^{')
+        .replaceAllMapped(
+          RegExp(r'([_^]){(\w+)}'),
+          (match) => '${match[1]}{${match[2]}}',
+        );
+
+    return latexContent;
+  }
+
+  Widget _buildTeXView(String content) {
+    if (content.contains('\$') ||
+        content.contains('\\[') ||
+        content.contains('\\(') ||
+        content.contains('ql-formula')) {
+      String latexContent = _processLatexContent(content);
+
+      // Handle display mode for matrices and equations
+      if (latexContent.contains(r'\begin{bmatrix}') ||
+          latexContent.contains('\\[') ||
+          latexContent.contains('\\]')) {
+        return Container(
+          padding: EdgeInsets.all(8),
+          child: Math.tex(
+            latexContent,
+            textStyle: const TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+            mathStyle: MathStyle.display,
+          ),
+        );
+      }
+
+      // Handle inline mode for simple expressions
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 4),
+        child: Math.tex(
+          latexContent,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            color: Colors.black87,
+          ),
+          mathStyle: MathStyle.text,
+        ),
+      );
+    }
+
+    // If no LaTeX, use regular HTML
+    return Html(
+      data: content,
+      style: {
+        "body": Style(
+          fontSize: FontSize(16),
+          margin: Margins.zero,
+          padding: HtmlPaddings.zero,
+        ),
+      },
+    );
   }
 
   Widget _buildStatsRow() {
-    final stats = [
+    final List<Map<String, dynamic>> stats = [
       {
         'title': 'Overall Accuracy',
         'value': '${accuracy.toStringAsFixed(1)}%',
+        'icon': Icons.check_circle,
       },
       {
         'title': 'Total Time Spent',
         'value': '${(timeAnalysis['totalTime'] / 60).toStringAsFixed(1)} min',
+        'icon': Icons.timer,
       },
       {
         'title': 'Average Confidence',
         'value': '${(averageConfidence).toStringAsFixed(1)}%',
+        'icon': Icons.trending_up,
       },
       {
         'title': 'Avg Time/Question',
         'value': '${averageTimePerQuestion.toStringAsFixed(1)} sec',
+        'icon': Icons.schedule,
       },
     ];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: stats.map((stat) {
+        children: stats.map((Map<String, dynamic> stat) {
           return Container(
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.teal.shade700,
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  stat['title']!,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
+                Icon(
+                  stat['icon'] as IconData,
+                  color: Colors.blue.shade400,
+                  size: 24,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  stat['value']!,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  stat['title'] as String,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  stat['value'] as String,
+                  style: TextStyle(
+                    color: Colors.blue.shade700,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -154,68 +264,91 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
 
   Widget _buildPerformanceChart() {
     final correct = categorizedQuestions['correctAnswers']!.length.toDouble();
-    final incorrect = categorizedQuestions['incorrectAnswers']!.length.toDouble();
-    final unanswered = categorizedQuestions['unansweredQuestions']!.length.toDouble();
+    final incorrect =
+        categorizedQuestions['incorrectAnswers']!.length.toDouble();
+    final unanswered =
+        categorizedQuestions['unansweredQuestions']!.length.toDouble();
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 200,
-              child: PieChart(
-                PieChartData(
-                  sections: [
-                    PieChartSectionData(
-                      color: Colors.green,
-                      value: correct,
-                      title: '${(correct / totalQuestions * 100).toStringAsFixed(1)}%',
-                      radius: 60,
-                      titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Performance Overview',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueAccent,
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 200,
+            child: PieChart(
+              PieChartData(
+                sections: [
+                  PieChartSectionData(
+                    color: Colors.green.shade400,
+                    value: correct,
+                    title:
+                        '${(correct / totalQuestions * 100).toStringAsFixed(1)}%',
+                    radius: 60,
+                    titleStyle: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    PieChartSectionData(
-                      color: Colors.red,
-                      value: incorrect,
-                      title: '${(incorrect / totalQuestions * 100).toStringAsFixed(1)}%',
-                      radius: 60,
-                      titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  PieChartSectionData(
+                    color: Colors.red.shade400,
+                    value: incorrect,
+                    title:
+                        '${(incorrect / totalQuestions * 100).toStringAsFixed(1)}%',
+                    radius: 60,
+                    titleStyle: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    PieChartSectionData(
-                      color: Colors.grey,
-                      value: unanswered,
-                      title: '${(unanswered / totalQuestions * 100).toStringAsFixed(1)}%',
-                      radius: 60,
-                      titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  PieChartSectionData(
+                    color: Colors.grey.shade400,
+                    value: unanswered,
+                    title:
+                        '${(unanswered / totalQuestions * 100).toStringAsFixed(1)}%',
+                    radius: 60,
+                    titleStyle: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                  sectionsSpace: 2,
-                ),
+                  ),
+                ],
+                sectionsSpace: 2,
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildLegendItem(Colors.green, 'Correct'),
-                const SizedBox(width: 16),
-                _buildLegendItem(Colors.red, 'Incorrect'),
-                const SizedBox(width: 16),
-                _buildLegendItem(Colors.grey, 'Unanswered'),
-              ],
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildLegendItem(Colors.green.shade400, 'Correct'),
+              const SizedBox(width: 20),
+              _buildLegendItem(Colors.red.shade400, 'Incorrect'),
+              const SizedBox(width: 20),
+              _buildLegendItem(Colors.grey.shade400, 'Unanswered'),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -226,61 +359,58 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
         Container(
           width: 16,
           height: 16,
-          color: color,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
-        const SizedBox(width: 4),
-        Text(label),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey.shade700,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildTeXView(String content) {
-    // Check if content contains LaTeX
-    if (content.contains('\$') || content.contains('\\[') || content.contains('\\(')) {
-      return TeXView(
-        child: TeXViewDocument(
-          content,
-          style: TeXViewStyle(
-            contentColor: Colors.black87,
-            backgroundColor: Colors.transparent,
-            padding: TeXViewPadding.all(8),
-          ),
-        ),
-        style: TeXViewStyle(
-          elevation: 0,
-          borderRadius: TeXViewBorderRadius.all(0),
-          backgroundColor: Colors.transparent,
-        ),
-      );
-    }
-    
-    // If no LaTeX, use regular HTML
-    return Html(
-      data: content,
-      style: {
-        "body": Style(
-          fontSize: FontSize(16),
-          margin: Margins.zero,
-          padding: HtmlPaddings.zero,
-        ),
-      },
-    );
-  }
-
-  Widget _buildQuestionList(String title, List<Map<String, dynamic>> questions, Color color) {
+  Widget _buildQuestionList(
+      String title, List<Map<String, dynamic>> questions, Color color) {
     if (questions.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+        Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                title.contains('Correct')
+                    ? Icons.check_circle
+                    : title.contains('Incorrect')
+                        ? Icons.cancel
+                        : Icons.help_outline,
+                color: color,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(
@@ -293,148 +423,144 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
               return Container(
                 width: MediaQuery.of(context).size.width * 0.85,
                 margin: const EdgeInsets.symmetric(horizontal: 8),
-                child: Card(
-                  elevation: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: color,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'Question ${question['index'] + 1}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
                         ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(8),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.quiz,
+                              color: color,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Question ${question['index'] + 1}',
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
                                   ),
-                                  child: _buildTeXView(question['question'] as String),
                                 ),
-                                const SizedBox(height: 16),
-                                if (question['userAnswer'] != null) ...[
-                                  Text(
-                                    'Your Answer:',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey[700],
+                                child: _buildTeXView(
+                                    question['options'][index] as String),
+                              ),
+                              const SizedBox(height: 20),
+                              if (question['userAnswer'] != null) ...[
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.edit,
+                                      size: 18,
+                                      color: Colors.grey.shade700,
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: question['isCorrect'] as bool
-                                          ? Colors.green[50]
-                                          : Colors.red[50],
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: question['isCorrect'] as bool
-                                            ? Colors.green
-                                            : Colors.red,
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Your Answer:',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey.shade700,
                                       ),
                                     ),
-                                    child: _buildTeXView(question['userAnswer'] as String),
-                                  ),
-                                  const SizedBox(height: 16),
-                                ],
-                                Text(
-                                  'Correct Answer:',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[700],
-                                  ),
+                                  ],
                                 ),
                                 const SizedBox(height: 8),
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.green[50],
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.green),
+                                    color: question['isCorrect'] as bool
+                                        ? Colors.green.shade50
+                                        : Colors.red.shade50,
+                                    borderRadius: BorderRadius.circular(15),
+                                    border: Border.all(
+                                      color: question['isCorrect'] as bool
+                                          ? Colors.green.shade300
+                                          : Colors.red.shade300,
+                                    ),
                                   ),
-                                  child: _buildTeXView(question['correctAnswer'] as String),
+                                  child: _buildTeXView(
+                                      question['userAnswer'] as String),
                                 ),
-                                const SizedBox(height: 16),
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Time Spent',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[700],
-                                            ),
-                                          ),
-                                          Text(
-                                            '${question['timeSpent']} seconds',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            'Confidence',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[700],
-                                            ),
-                                          ),
-                                          Text(
-                                            '${(question['displayConfidence'] as double).toStringAsFixed(1)}%',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                const SizedBox(height: 20),
                               ],
-                            ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    size: 18,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Correct Answer:',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade50,
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    color: Colors.green.shade300,
+                                  ),
+                                ),
+                                child: _buildTeXView(
+                                    question['correctAnswer'] as String),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );

@@ -20,13 +20,12 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isLoading = false;
   bool _isOtpFieldVisible = false;
   bool _isEmailVerified = false;
+  bool _isPasswordVisible = false;
 
-  // New method to check if registration is allowed
   bool _isRegistrationAllowed() {
     return _isFormValid() && _receiveUpdates && _isEmailVerified;
   }
 
-  // Method to get helper text for registration requirements
   String _getRegistrationHelperText() {
     if (!_isEmailVerified) {
       return 'Please verify your email to continue';
@@ -41,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _updateFormValidity() {
-    setState(() {}); // Triggers a rebuild to update the register button's enabled/disabled state
+    setState(() {});
   }
 
   Future<void> _sendOtp() async {
@@ -74,7 +73,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() => _isLoading = true);
 
-    // Make the API call to verify OTP
     final response = await ApiService().postRequest(verifyOtpEndpoint, {
       'Email': _emailController.text.trim(),
       'OTP': otp,
@@ -83,12 +81,10 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() {
       _isLoading = false;
 
-      // Check if the response contains the success message
-      if (response != null &&
-          response['message'] == "OTP verified successfully") {
+      if (response != null && response['message'] == "OTP verified successfully") {
         _isEmailVerified = true;
         _errorMessage = 'Email verified successfully!';
-        _updateFormValidity(); // Update form validity to enable Register button
+        _updateFormValidity();
       } else {
         _isEmailVerified = false;
         _errorMessage = 'OTP verification failed. Try again.';
@@ -96,7 +92,6 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  // Method to validate if form fields are filled and email is verified
   bool _isFormValid() {
     return _firstNameController.text.trim().isNotEmpty &&
         _lastNameController.text.trim().isNotEmpty &&
@@ -127,28 +122,42 @@ class _RegisterPageState extends State<RegisterPage> {
     };
 
     try {
-      final response =
-          await ApiService().postRequest(registerEndpoint, requestData);
+      final response = await ApiService().postRequest(registerEndpoint, requestData);
 
       setState(() => _isLoading = false);
 
-      // Check if registration was successful based on the presence of `UserID`
       if (response != null && response.containsKey('UserID')) {
         showDialog(
-          // ignore: use_build_context_synchronously
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text("Registration Successful"),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green.shade400, size: 30),
+                  const SizedBox(width: 10),
+                  const Text("Registration Successful"),
+                ],
+              ),
               content: const Text(
-                  "You have registered successfully! Please log in to continue."),
+                "You have registered successfully! Please log in to continue.",
+                style: TextStyle(fontSize: 16),
+              ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/', (route) => false);
+                    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
                   },
-                  child: const Text("Go to Login"),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.teal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  ),
+                  child: const Text(
+                    "Go to Login",
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
               ],
             );
@@ -156,15 +165,13 @@ class _RegisterPageState extends State<RegisterPage> {
         );
       } else {
         setState(() {
-          _errorMessage =
-              response?['message'] ?? 'Registration failed. Please try again.';
+          _errorMessage = response?['message'] ?? 'Registration failed. Please try again.';
         });
       }
     } catch (error) {
       setState(() {
         _isLoading = false;
-        _errorMessage =
-            'An error occurred. Please check your network connection.';
+        _errorMessage = 'An error occurred. Please check your network connection.';
       });
     }
   }
@@ -190,271 +197,403 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool isPassword = false,
+    bool isPhone = false,
+    Widget? suffix,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword && !_isPasswordVisible,
+      keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.grey.shade600),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.teal.shade400, width: 2),
+        ),
+        prefixIcon: Icon(icon, color: Colors.grey.shade600),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.grey.shade600,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+              )
+            : suffix,
+        filled: true,
+        fillColor: Colors.grey.shade50,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register',
-            style: TextStyle(fontSize: 24, color: Colors.white)),
-        backgroundColor: Colors.teal,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            const Text(
-              'Welcome to the Club Champ!',
-              style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'What should we call you?',
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.teal),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-
-            // First Name and Last Name fields
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _firstNameController,
-                    decoration: InputDecoration(
-                      labelText: 'First Name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.teal,
+              Colors.teal.shade50,
+            ],
+            stops: const [0.0, 0.3],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  // Header with back button
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(color: Colors.teal, width: 2.0),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: _lastNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Last Name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(color: Colors.teal, width: 2.0),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Password field
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Enter your Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                prefixIcon: const Icon(Icons.lock, color: Colors.teal),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.teal, width: 2.0),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Phone Number field
-            TextField(
-              controller: _phoneController,
-              decoration: InputDecoration(
-                labelText: 'Enter your Phone Number',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                prefixIcon: const Icon(Icons.phone, color: Colors.teal),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.teal, width: 2.0),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Email field with "Send OTP" button inside the text field
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Enter your Email',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                prefixIcon: const Icon(Icons.email, color: Colors.teal),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _sendOtp,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    child: const Text("Send OTP"),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.teal, width: 2.0),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // OTP Field
-            if (_isOtpFieldVisible)
-              TextField(
-                controller: _otpController,
-                decoration: InputDecoration(
-                  labelText: 'Enter OTP',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  prefixIcon: const Icon(Icons.lock, color: Colors.teal),
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _verifyOtp,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
+                      const Text(
+                        'Register',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
-                      child: const Text("Verify OTP"),
-                    ),
+                    ],
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        const BorderSide(color: Colors.teal, width: 2.0),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 20),
+                  const SizedBox(height: 40),
 
-            // Checkbox for SAKEC updates with required indicator
-            CheckboxListTile(
-              title: Row(
-                children: [
-                  const Text(
-                    'Send me updates from SAKEC',
-                    style: TextStyle(
-                      color: Colors.teal,
-                      fontSize: 14,
+                  // Main Content Card
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '*',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.teal.shade50,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.person_add,
+                            size: 50,
+                            color: Colors.teal.shade400,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Welcome to the Club!',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal.shade400,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Let\'s get you started with your account',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Name Fields
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildInputField(
+                                controller: _firstNameController,
+                                label: 'First Name',
+                                icon: Icons.person_outline,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _buildInputField(
+                                controller: _lastNameController,
+                                label: 'Last Name',
+                                icon: Icons.person_outline,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Password field
+                        _buildInputField(
+                          controller: _passwordController,
+                          label: 'Password',
+                          icon: Icons.lock_outline,
+                          isPassword: true,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Phone Number field
+                        _buildInputField(
+                          controller: _phoneController,
+                          label: 'Phone Number',
+                          icon: Icons.phone_outlined,
+                          isPhone: true,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Email field with OTP button
+                        _buildInputField(
+                          controller: _emailController,
+                          label: 'Email',
+                          icon: Icons.email_outlined,
+                          suffix: Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _sendOtp,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal.shade400,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(_isOtpFieldVisible ? "Resend OTP" : "Send OTP"),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // OTP Field
+                        if (_isOtpFieldVisible)
+                          Column(
+                            children: [
+                              _buildInputField(
+                                controller: _otpController,
+                                label: 'Enter OTP',
+                                icon: Icons.lock_clock_outlined,
+                                suffix: Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: ElevatedButton(
+                                    onPressed: _isLoading ? null : _verifyOtp,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.teal.shade400,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: const Text("Verify"),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
+
+                        // Updates Checkbox
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.teal.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: CheckboxListTile(
+                            title: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Send me updates from SAKEC',
+                                    style: TextStyle(
+                                      color: Colors.teal.shade700,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '*',
+                                  style: TextStyle(
+                                    color: Colors.red.shade400,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            value: _receiveUpdates,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _receiveUpdates = value ?? false;
+                                _updateFormValidity();
+                              });
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            activeColor: Colors.teal.shade400,
+                            checkColor: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Helper and Error Messages
+                        if (_getRegistrationHelperText().isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.orange.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline, color: Colors.orange.shade400),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _getRegistrationHelperText(),
+                                    style: TextStyle(
+                                      color: Colors.orange.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        if (_errorMessage.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(top: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: _isEmailVerified ? Colors.green.shade50 : Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: _isEmailVerified ? Colors.green.shade200 : Colors.red.shade200,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _isEmailVerified ? Icons.check_circle : Icons.error_outline,
+                                  color: _isEmailVerified ? Colors.green.shade400 : Colors.red.shade400,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage,
+                                    style: TextStyle(
+                                      color: _isEmailVerified ? Colors.green.shade700 : Colors.red.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        const SizedBox(height: 24),
+
+                        // Register Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _isRegistrationAllowed() ? _register : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal.shade400,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: Colors.grey.shade300,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              elevation: 2,
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Register',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Already have an account? ',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.teal.shade400,
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                              child: const Text(
+                                'Login here',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              value: _receiveUpdates,
-              onChanged: (bool? value) {
-                setState(() {
-                  _receiveUpdates = value ?? false;
-                  _updateFormValidity();
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-              activeColor: Colors.teal,
             ),
-            const SizedBox(height: 10),
-
-            // Helper text for registration requirements
-            if (_getRegistrationHelperText().isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Text(
-                  _getRegistrationHelperText(),
-                  style: TextStyle(
-                    color: Colors.red[700],
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-
-            // Display error message if present
-            if (_errorMessage.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Text(
-                  _errorMessage,
-                  style: TextStyle(
-                    color: _isEmailVerified ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-            // Register button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isRegistrationAllowed() ? _register : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  disabledBackgroundColor: Colors.grey[300],
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Register',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: _isRegistrationAllowed()
-                              ? Colors.white
-                              : Colors.grey[600],
-                        ),
-                      ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

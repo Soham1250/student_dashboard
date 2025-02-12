@@ -19,7 +19,8 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.3
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.27.1 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -40,7 +41,8 @@ dependencies:
   fl_chart: ^0.69.0 
 
   # HTML and LaTeX rendering
-  flutter_tex: ^4.0.13
+  flutter_html: ^3.0.0-beta.2
+  flutter_math_fork: ^0.7.2
 
   # Date/Time Formatting (if required for timer and other calculations)
   intl: ^0.20.0
@@ -53,7 +55,6 @@ dependencies:
 
   # Icons (if additional Cupertino-style icons are needed)
   cupertino_icons: ^1.0.8
-  flutter_html: ^3.0.0-beta.2
 
 
 dev_dependencies:

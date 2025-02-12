@@ -1,11 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_tex/flutter_tex.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import 'dart:async';
 import 'dart:math';
 import '../../../../../api/api_service.dart';
 import '../../../../../api/endpoints.dart';
 import '../../TestAnalysis/universal_test_analysis.dart';
+
+class ContentSegment {
+  final String content;
+  final bool isLatex;
+  final bool isMathText;
+
+  ContentSegment(this.content, this.isLatex, {this.isMathText = false});
+}
+
+class MixedContentParser {
+  // Regex to match the entire span and capture the LaTeX content
+  static final RegExp _latexSpanRegex = RegExp(
+      r'<span[^>]*?class="ql-formula"[^>]*?data-value="([^"]*)"[^>]*?>.*?</span>',
+      multiLine: true,
+      dotAll: true);
+  static final RegExp _mathTextRegex = RegExp(r'^[\s\d+\-=×÷*/.()]+$');
+  static final RegExp _multipleWhitespaceRegex = RegExp(r'\s+');
+
+  static bool _isOnlyMathText(String text) {
+    return _mathTextRegex.hasMatch(text);
+  }
+
+  static String _normalizeWhitespace(String text) {
+    return text.replaceAll(_multipleWhitespaceRegex, ' ').trim();
+  }
+
+  static List<ContentSegment> parseContent(String content) {
+    final List<ContentSegment> segments = [];
+    int lastIndex = 0;
+
+    // Replace LaTeX spans with placeholders and collect LaTeX content
+    final matches = _latexSpanRegex.allMatches(content).toList();
+    String processedContent = content;
+
+    // Process matches in reverse order to not affect positions of earlier matches
+    for (int i = matches.length - 1; i >= 0; i--) {
+      final match = matches[i];
+      final latexContent = match.group(1);
+      if (latexContent != null && latexContent.isNotEmpty) {
+        // Remove the span from the HTML content
+        processedContent =
+            processedContent.replaceRange(match.start, match.end, '');
+      }
+    }
+
+    // Now process the remaining HTML content
+    if (processedContent.isNotEmpty) {
+      final normalizedText = _normalizeWhitespace(processedContent);
+      if (normalizedText.isNotEmpty && !_isOnlyMathText(normalizedText)) {
+        segments.add(ContentSegment(normalizedText, false));
+      }
+    }
+
+    // Add LaTeX segments in their original order
+    for (final match in matches) {
+      final latexContent = match.group(1);
+      if (latexContent != null && latexContent.isNotEmpty) {
+        segments.add(ContentSegment(latexContent, true));
+      }
+    }
+
+    return segments;
+  }
+
+  static String sanitizeLatex(String latex) {
+    return latex
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll(r'\(', r'\left(')
+        .replaceAll(r'\)', r'\right)')
+        .replaceAll(r'\begin{matrix}', r'\begin{matrix}')
+        .replaceAll(r'\end{matrix}', r'\end{matrix}');
+  }
+}
 
 class UniversalTestInterface extends StatefulWidget {
   @override
@@ -81,8 +158,8 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   // Fetch questions from the API
   Future<void> fetchQuestions() async {
     try {
-      final response = await _apiService
-          .postRequest(addQuestionPaperEndpoint, {"testType": testType, "UserID": UserID});
+      final response = await _apiService.postRequest(
+          addQuestionPaperEndpoint, {"testType": testType, "UserID": UserID});
 
       if (response['addedQuestions'] == null) {
         throw Exception('No questions received from API');
@@ -288,24 +365,26 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
       }
 
       if (question['userAnswer'] == null) {
-        subjectWiseBreakdown[subject]!['unattempted'] = 
+        subjectWiseBreakdown[subject]!['unattempted'] =
             (subjectWiseBreakdown[subject]!['unattempted'] ?? 0) + 1;
       } else if (question['userAnswer'] == question['correctAnswer']) {
-        subjectWiseBreakdown[subject]!['correct'] = 
+        subjectWiseBreakdown[subject]!['correct'] =
             (subjectWiseBreakdown[subject]!['correct'] ?? 0) + 1;
       } else {
-        subjectWiseBreakdown[subject]!['incorrect'] = 
+        subjectWiseBreakdown[subject]!['incorrect'] =
             (subjectWiseBreakdown[subject]!['incorrect'] ?? 0) + 1;
       }
     }
 
     // Prepare test data for analysis
     final testData = {
-      'questions': questions.map((q) => {
-        ...q,
-        'isCorrect': q['userAnswer'] == q['correctAnswer'],
-        'timeSpent': q['timeSpent'] ?? 0,
-      }).toList(),
+      'questions': questions
+          .map((q) => {
+                ...q,
+                'isCorrect': q['userAnswer'] == q['correctAnswer'],
+                'timeSpent': q['timeSpent'] ?? 0,
+              })
+          .toList(),
       'subjectWiseBreakdown': subjectWiseBreakdown,
       'totalTime': totalTime,
       'timeSpent': totalTime - remainingTime,
@@ -563,35 +642,70 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   }
 
   Widget _buildTeXView(String content) {
-    // Check if content contains LaTeX
-    if (content.contains('\$') || content.contains('\\[') || content.contains('\\(')) {
-      return TeXView(
-        child: TeXViewDocument(
-          content,
-          style: TeXViewStyle(
-            contentColor: Colors.black87,
-            backgroundColor: Colors.transparent,
-            padding: TeXViewPadding.all(8),
-          ),
+    final segments = MixedContentParser.parseContent(content);
+
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.black87,
         ),
-        style: TeXViewStyle(
-          elevation: 0,
-          borderRadius: TeXViewBorderRadius.all(0),
-          backgroundColor: Colors.transparent,
-        ),
-      );
-    }
-    
-    // If no LaTeX, use regular HTML
-    return Html(
-      data: content,
-      style: {
-        "body": Style(
-          fontSize: FontSize(16),
-          margin: Margins.zero,
-          padding: HtmlPaddings.zero,
-        ),
-      },
+        children: segments.map((segment) {
+          if (segment.isLatex) {
+            try {
+              final sanitizedLatex =
+                  MixedContentParser.sanitizeLatex(segment.content);
+              return WidgetSpan(
+                alignment: PlaceholderAlignment.baseline,
+                baseline: TextBaseline.alphabetic,
+                child: Transform.translate(
+                  offset: const Offset(0, 2),
+                  child: Math.tex(
+                    sanitizedLatex,
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                    mathStyle: sanitizedLatex.contains(r'\begin{bmatrix}') ||
+                            sanitizedLatex.contains(r'\[') ||
+                            sanitizedLatex.contains(r'\]')
+                        ? MathStyle.display
+                        : MathStyle.text,
+                    onErrorFallback: (error) {
+                      debugPrint(
+                          'LaTeX Error: $error for content: $sanitizedLatex');
+                      return const SizedBox
+                          .shrink(); // Return empty widget on error instead of raw text
+                    },
+                  ),
+                ),
+              );
+            } catch (e) {
+              debugPrint('LaTeX Exception: $e for content: ${segment.content}');
+              return const WidgetSpan(
+                  child: SizedBox.shrink()); // Return empty widget on exception
+            }
+          } else {
+            return WidgetSpan(
+              alignment: PlaceholderAlignment.baseline,
+              baseline: TextBaseline.alphabetic,
+              child: Html(
+                data: segment.content,
+                style: {
+                  "body": Style(
+                    fontSize: FontSize(16),
+                    margin: Margins.zero,
+                    padding: HtmlPaddings.zero,
+                    lineHeight: LineHeight.normal,
+                  ),
+                },
+              ),
+            );
+          }
+        }).toList(),
+      ),
+      softWrap: true,
+      textAlign: TextAlign.left,
     );
   }
 
