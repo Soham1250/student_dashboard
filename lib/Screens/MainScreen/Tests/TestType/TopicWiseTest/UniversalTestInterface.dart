@@ -21,49 +21,54 @@ class MixedContentParser {
       r'<span[^>]*?class="ql-formula"[^>]*?data-value="([^"]*)"[^>]*?>.*?</span>',
       multiLine: true,
       dotAll: true);
-  static final RegExp _mathTextRegex = RegExp(r'^[\s\d+\-=×÷*/.()]+$');
-  static final RegExp _multipleWhitespaceRegex = RegExp(r'\s+');
-
-  static bool _isOnlyMathText(String text) {
-    return _mathTextRegex.hasMatch(text);
-  }
-
-  static String _normalizeWhitespace(String text) {
-    return text.replaceAll(_multipleWhitespaceRegex, ' ').trim();
-  }
 
   static List<ContentSegment> parseContent(String content) {
     final List<ContentSegment> segments = [];
-    int lastIndex = 0;
 
-    // Replace LaTeX spans with placeholders and collect LaTeX content
+    // Match LaTeX spans
     final matches = _latexSpanRegex.allMatches(content).toList();
-    String processedContent = content;
 
-    // Process matches in reverse order to not affect positions of earlier matches
-    for (int i = matches.length - 1; i >= 0; i--) {
-      final match = matches[i];
-      final latexContent = match.group(1);
-      if (latexContent != null && latexContent.isNotEmpty) {
-        // Remove the span from the HTML content
-        processedContent =
-            processedContent.replaceRange(match.start, match.end, '');
-      }
-    }
+    // Track positions to split non-LaTeX content
+    List<int> splitPositions = [];
+    List<String> latexSegments = [];
 
-    // Now process the remaining HTML content
-    if (processedContent.isNotEmpty) {
-      final normalizedText = _normalizeWhitespace(processedContent);
-      if (normalizedText.isNotEmpty && !_isOnlyMathText(normalizedText)) {
-        segments.add(ContentSegment(normalizedText, false));
-      }
-    }
-
-    // Add LaTeX segments in their original order
+    // First pass: collect all LaTeX segments and their positions
     for (final match in matches) {
       final latexContent = match.group(1);
       if (latexContent != null && latexContent.isNotEmpty) {
-        segments.add(ContentSegment(latexContent, true));
+        splitPositions.add(match.start);
+        splitPositions.add(match.end);
+        latexSegments.add(latexContent);
+      }
+    }
+
+    // Sort split positions
+    splitPositions.sort();
+
+    // Process content in order
+    int lastPosition = 0;
+    int latexIndex = 0;
+
+    for (int i = 0; i < splitPositions.length; i += 2) {
+      // Add text before LaTeX if any
+      if (splitPositions[i] > lastPosition) {
+        final textContent = content.substring(lastPosition, splitPositions[i]);
+        if (textContent.trim().isNotEmpty) {
+          segments.add(ContentSegment(textContent, false));
+        }
+      }
+
+      // Add LaTeX segment
+      segments.add(ContentSegment(latexSegments[latexIndex++], true));
+
+      lastPosition = splitPositions[i + 1];
+    }
+
+    // Add remaining text if any
+    if (lastPosition < content.length) {
+      final textContent = content.substring(lastPosition);
+      if (textContent.trim().isNotEmpty) {
+        segments.add(ContentSegment(textContent, false));
       }
     }
 
