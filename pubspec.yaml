@@ -34,6 +34,10 @@ dependencies:
 
   http: ^1.2.2
 
+  webview_flutter_android: ^4.3.3
+  
+  webview_flutter_wkwebview: ^3.6.0
+
   # State management for dynamic UI updates
   provider: ^6.0.0 
 
@@ -55,6 +59,8 @@ dependencies:
 
   # Icons (if additional Cupertino-style icons are needed)
   cupertino_icons: ^1.0.8
+
+  webview_flutter: ^4.9.0
 
 
 dev_dependencies:

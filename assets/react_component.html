@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Math Renderer</title>
+    
+    <!-- React and ReactDOM via CDN -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX parsing -->
+    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+    
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        function MathRenderer({ content }) {
+            const [mathContent, setMathContent] = React.useState(content);
+
+            React.useEffect(() => {
+                if (mathContent) {
+                    document.getElementById("math-container").innerHTML = katex.renderToString(mathContent, { throwOnError: false });
+                }
+            }, [mathContent]);
+
+            return (
+                <div>
+                    <h2>Rendered Math:</h2>
+                    <div id="math-container" style={{ fontSize: '1.5rem' }}></div>
+                </div>
+            );
+        }
+        
+        function App() {
+            const [content, setContent] = React.useState("\\frac{a}{b} = c");
+            
+            window.setContent = function(newContent) {
+                setContent(newContent);
+            };
+            
+            return <MathRenderer content={content} />;
+        }
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

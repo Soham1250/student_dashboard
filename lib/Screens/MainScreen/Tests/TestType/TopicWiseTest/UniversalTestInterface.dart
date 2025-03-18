@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'dart:async';
 import 'dart:math';
@@ -24,15 +23,10 @@ class MixedContentParser {
 
   static List<ContentSegment> parseContent(String content) {
     final List<ContentSegment> segments = [];
-
-    // Match LaTeX spans
     final matches = _latexSpanRegex.allMatches(content).toList();
-
-    // Track positions to split non-LaTeX content
     List<int> splitPositions = [];
     List<String> latexSegments = [];
 
-    // First pass: collect all LaTeX segments and their positions
     for (final match in matches) {
       final latexContent = match.group(1);
       if (latexContent != null && latexContent.isNotEmpty) {
@@ -42,31 +36,37 @@ class MixedContentParser {
       }
     }
 
-    // Sort split positions
     splitPositions.sort();
-
-    // Process content in order
     int lastPosition = 0;
     int latexIndex = 0;
 
     for (int i = 0; i < splitPositions.length; i += 2) {
-      // Add text before LaTeX if any
+      // ✅ Ensure only non-math text is added
       if (splitPositions[i] > lastPosition) {
-        final textContent = content.substring(lastPosition, splitPositions[i]);
+        final textContent = content
+            .substring(lastPosition, splitPositions[i])
+            .replaceAll(RegExp(r'\$.*?\$'), '') // Remove inline LaTeX
+            .replaceAll(RegExp(r'\\\[.*?\\\]'), ''); // Remove block LaTeX
+
         if (textContent.trim().isNotEmpty) {
           segments.add(ContentSegment(textContent, false));
         }
       }
 
-      // Add LaTeX segment
-      segments.add(ContentSegment(latexSegments[latexIndex++], true));
+      // ✅ Add only properly formatted LaTeX
+      if (latexIndex < latexSegments.length) {
+        segments.add(ContentSegment(latexSegments[latexIndex++], true));
+      }
 
       lastPosition = splitPositions[i + 1];
     }
 
-    // Add remaining text if any
     if (lastPosition < content.length) {
-      final textContent = content.substring(lastPosition);
+      final textContent = content
+          .substring(lastPosition)
+          .replaceAll(RegExp(r'\$.*?\$'), '')
+          .replaceAll(RegExp(r'\\\[.*?\\\]'), '');
+
       if (textContent.trim().isNotEmpty) {
         segments.add(ContentSegment(textContent, false));
       }
@@ -324,10 +324,17 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   String convertHtmlToPlainText(String? htmlString) {
     if (htmlString == null) return '';
 
-    // Remove HTML tags
     String plainText = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
 
-    // Decode HTML entities
+    // ✅ Remove any leftover LaTeX markers
+    plainText = plainText
+        .replaceAll(RegExp(r'\$.*?\$'), '') // Inline math
+        .replaceAll(RegExp(r'\\\[(.*?)\\\]'), '') // Block math
+        .replaceAll(
+            RegExp(r'\\begin{.*?}|\\end{.*?}'), '') // Remove matrix brackets
+        .replaceAll(
+            RegExp(r'\\left|\\right'), ''); // Remove left/right operators
+
     plainText = plainText
         .replaceAll('&nbsp;', ' ')
         .replaceAll('&amp;', '&')
@@ -336,10 +343,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
         .replaceAll('&quot;', '"')
         .replaceAll('&#39;', "'");
 
-    // Remove extra whitespace
-    plainText = plainText.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return plainText;
+    return plainText.replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   // Final submission
@@ -660,50 +664,42 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
             try {
               final sanitizedLatex =
                   MixedContentParser.sanitizeLatex(segment.content);
+
               return WidgetSpan(
                 alignment: PlaceholderAlignment.baseline,
                 baseline: TextBaseline.alphabetic,
-                child: Transform.translate(
-                  offset: const Offset(0, 2),
-                  child: Math.tex(
-                    sanitizedLatex,
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                    mathStyle: sanitizedLatex.contains(r'\begin{bmatrix}') ||
-                            sanitizedLatex.contains(r'\[') ||
-                            sanitizedLatex.contains(r'\]')
-                        ? MathStyle.display
-                        : MathStyle.text,
-                    onErrorFallback: (error) {
-                      debugPrint(
-                          'LaTeX Error: $error for content: $sanitizedLatex');
-                      return const SizedBox
-                          .shrink(); // Return empty widget on error instead of raw text
-                    },
-                  ),
+                child: Math.tex(
+                  sanitizedLatex,
+                  textStyle:
+                      const TextStyle(fontSize: 16, color: Colors.black87),
+                  mathStyle: sanitizedLatex.contains(r'\begin{bmatrix}') ||
+                          sanitizedLatex.contains(r'\[') ||
+                          sanitizedLatex.contains(r'\]')
+                      ? MathStyle.display
+                      : MathStyle.text,
+                  onErrorFallback: (error) {
+                    debugPrint(
+                        'LaTeX Error: $error for content: $sanitizedLatex');
+                    return const SizedBox.shrink();
+                  },
                 ),
               );
             } catch (e) {
               debugPrint('LaTeX Exception: $e for content: ${segment.content}');
-              return const WidgetSpan(
-                  child: SizedBox.shrink()); // Return empty widget on exception
+              return const WidgetSpan(child: SizedBox.shrink());
             }
           } else {
+            // ✅ Remove raw LaTeX if it's already rendered
+            final sanitizedText = convertHtmlToPlainText(segment.content)
+                .replaceAll(RegExp(r'\$.*?\$'), '')
+                .replaceAll(RegExp(r'\\\[.*?\\\]'), '');
+
             return WidgetSpan(
               alignment: PlaceholderAlignment.baseline,
               baseline: TextBaseline.alphabetic,
-              child: Html(
-                data: segment.content,
-                style: {
-                  "body": Style(
-                    fontSize: FontSize(16),
-                    margin: Margins.zero,
-                    padding: HtmlPaddings.zero,
-                    lineHeight: LineHeight.normal,
-                  ),
-                },
+              child: Text(
+                sanitizedText,
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
             );
           }

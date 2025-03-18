@@ -57,7 +57,6 @@ class ApiService {
   }
 
   dynamic _processResponse(http.Response response) {
-    print(response.body); // Debug line
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       // Add default values for missing fields
