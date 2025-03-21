@@ -1,6 +1,6 @@
 // api/endpoints.dart
 
-const String baseUrl = 'http://192.168.29.165:4000/api';
+const String baseUrl = 'http://192.168.174.108:4000/api';
 
 // Authentication
 const String emailOtpEndpoint = '$baseUrl/emailotp';
