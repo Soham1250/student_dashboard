@@ -1,49 +1,48 @@
-# CET Student Dashboard
+# 🎓 CET Student Dashboard
 
 <div align="center">
-  <img src="assets/images/logo.png" alt="CET Student Dashboard Logo" width="200"/>
-  <h3>A comprehensive learning and testing platform for CET preparation</h3>
+  <h3>📚 A comprehensive learning and testing platform for CET preparation 📝</h3>
 </div>
 
-## Overview
+## 📱 Overview
 
 CET Student Dashboard is a Flutter-based mobile application designed to help students prepare for Common Entrance Tests (CET). The application provides a comprehensive platform for students to practice tests, track performance, access learning materials, and manage their preparation journey effectively.
 
-## Features
+## ✨ Features
 
-### Test Preparation
+### 🧪 Test Preparation
 - **Topic-wise Tests**: Practice tests organized by specific topics
 - **Subject-wise Tests**: Complete tests for Physics, Chemistry, Biology, and Mathematics
 - **Full-Length Tests**: Simulated exam experience with timed full-length tests
 - **Previous Year Papers**: Access to MHT CET previous year question papers
 
-### Performance Tracking
+### 📊 Performance Tracking
 - **Detailed Analytics**: Track performance across subjects and topics
 - **Progress Monitoring**: View improvement over time with visual charts
 - **Confidence Metrics**: Analyze confidence levels for different question types
 
-### Learning Resources
+### 📚 Learning Resources
 - **Subject Materials**: Organized learning content by subject
 - **Chapter-wise Content**: Detailed notes and explanations for each chapter
 - **Interactive Content**: Support for mathematical formulas and scientific notation
 
-### Additional Features
-- **Grievance System**: Report issues with questions or tests
-- **Feedback Mechanism**: Provide feedback on the application experience
-- **User Authentication**: Secure login and registration system
-- **Responsive UI**: Beautiful and intuitive user interface
+### 🔄 Additional Features
+- **🔍 Grievance System**: Report issues with questions or tests
+- **💬 Feedback Mechanism**: Provide feedback on the application experience
+- **🔐 User Authentication**: Secure login and registration system
+- **🎨 Responsive UI**: Beautiful and intuitive user interface
 
-## Technology Stack
+## 🛠️ Technology Stack
 
-- **Frontend**: Flutter (Dart)
-- **State Management**: Provider
-- **API Integration**: HTTP package
-- **Data Visualization**: FL Chart
-- **Content Rendering**: Flutter HTML, Flutter Math Fork
-- **Local Storage**: Shared Preferences
-- **Backend Integration**: RESTful API endpoints
+- **🔷 Frontend**: Flutter (Dart)
+- **🔄 State Management**: Provider
+- **🌐 API Integration**: HTTP package
+- **📈 Data Visualization**: FL Chart
+- **📄 Content Rendering**: Flutter HTML, Flutter Math Fork
+- **💾 Local Storage**: Shared Preferences
+- **🔌 Backend Integration**: RESTful API endpoints
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - Flutter SDK (>=3.27.1)
@@ -72,7 +71,7 @@ flutter pub get
 flutter run
 ```
 
-## Application Structure
+## 📂 Application Structure
 
 ```
 lib/
@@ -95,44 +94,44 @@ lib/
 └── main.dart             # Application entry point
 ```
 
-## Key Components
+## 🧩 Key Components
 
-### Test Interface
+### 📝 Test Interface
 The application features a universal test interface that supports:
-- Mixed content rendering (text and LaTeX formulas)
-- Question navigation and marking for review
-- Timer functionality for timed tests
-- Answer selection and submission
-- Performance analysis after test completion
+- 🔄 Mixed content rendering (text and LaTeX formulas)
+- 🧭 Question navigation and marking for review
+- ⏱️ Timer functionality for timed tests
+- ✅ Answer selection and submission
+- 📊 Performance analysis after test completion
 
-### Authentication System
-- Secure login with credential storage
-- Registration for new users
-- Password recovery functionality
+### 🔐 Authentication System
+- 🔒 Secure login with credential storage
+- 📝 Registration for new users
+- 🔑 Password recovery functionality
 
-### Learning Module
-- Structured content organized by subjects and chapters
-- Support for rich text and mathematical formulas
-- Interactive learning experience
+### 📚 Learning Module
+- 📋 Structured content organized by subjects and chapters
+- 📐 Support for rich text and mathematical formulas
+- 🎮 Interactive learning experience
 
-## Upcoming Features
+## 🔜 Upcoming Features
 
-- Gamified test levels with progression system
-- Enhanced question rendering with HTML and LaTeX
-- Improved performance analytics
-- Rank predictor for students
-- Chapter-wise statistics
-- Enhanced feedback questionnaire
+- 🎮 Gamified test levels with progression system
+- 📝 Enhanced question rendering with HTML and LaTeX
+- 📈 Improved performance analytics
+- 🏆 Rank predictor for students
+- 📊 Chapter-wise statistics
+- 📋 Enhanced feedback questionnaire
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the [MIT License](./LICENSE) - see the LICENSE file for details.
 
-## Acknowledgements
+## 🙏 Acknowledgements
 
 - Made with ❤️ in SAKEC
 - Flutter and Dart community for the excellent tools and packages
