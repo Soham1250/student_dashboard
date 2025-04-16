@@ -6,12 +6,14 @@ import 'package:student_dashboard/api/endpoints.dart';
 class ChapterList extends StatelessWidget {
   final String subjectId;
   final Function(Chapter) onChapterTap;
+  final Color accentColor;
   final _apiService = ApiService();
 
   ChapterList({
     super.key,
     required this.subjectId,
     required this.onChapterTap,
+    required this.accentColor,
   });
 
   Future<List<Chapter>> _getChapters() async {
@@ -107,6 +109,7 @@ class ChapterList extends StatelessWidget {
             return ChapterCard(
               chapter: chapter,
               onTap: () => onChapterTap(chapter),
+              accentColor: accentColor,
             );
           },
         );
@@ -118,56 +121,75 @@ class ChapterList extends StatelessWidget {
 class ChapterCard extends StatelessWidget {
   final Chapter chapter;
   final VoidCallback onTap;
+  final Color accentColor;
 
   const ChapterCard({
     super.key,
     required this.chapter,
     required this.onTap,
+    required this.accentColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 20),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
+      shadowColor: accentColor.withOpacity(0.12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             color: Colors.white,
             border: Border.all(
-              color: Colors.blueAccent.withOpacity(0.3),
-              width: 1,
+              color: accentColor.withOpacity(0.22),
+              width: 1.5,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.book_outlined,
-                color: Colors.blueAccent,
-                size: 24,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.book_outlined,
+                  color: accentColor,
+                  size: 26,
+                ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 18),
               Expanded(
                 child: Text(
                   chapter.chapterName,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 17,
                     fontWeight: FontWeight.w600,
-                    color: Colors.blueAccent,
+                    color: accentColor,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.blueAccent,
-                size: 16,
+                color: accentColor,
+                size: 18,
               ),
             ],
           ),

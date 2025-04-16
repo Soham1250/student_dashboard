@@ -11,6 +11,22 @@ class LearnSubjectScreen extends StatelessWidget {
     final String subjectId = args['subjectId'] ?? "Unknown";
     final String subjectName = args['subjectName'] ?? "Unknown";
 
+    // Choose accent color based on subject name
+    Color accentColor;
+    switch (subjectName) {
+      case 'Physics':
+        accentColor = Colors.blueAccent;
+        break;
+      case 'Chemistry':
+        accentColor = Colors.purple;
+        break;
+      case 'Mathematics':
+        accentColor = Colors.orange;
+        break;
+      default:
+        accentColor = Colors.blueAccent;
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -36,6 +52,7 @@ class LearnSubjectScreen extends StatelessWidget {
           Expanded(
             child: ChapterList(
               subjectId: subjectId,
+              accentColor: accentColor,
               onChapterTap: (chapter) {
                 Navigator.pushNamed(
                   context,

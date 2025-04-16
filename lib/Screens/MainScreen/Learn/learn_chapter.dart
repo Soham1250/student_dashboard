@@ -97,6 +97,7 @@ class LearnChapterScreen extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   child: ChapterList(
                     subjectId: subjectID,
+                    accentColor: subjectColor,
                     onChapterTap: (chapter) {
                       Navigator.pushNamed(
                         context,

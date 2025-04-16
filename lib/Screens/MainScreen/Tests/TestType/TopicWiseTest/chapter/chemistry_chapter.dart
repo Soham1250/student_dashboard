@@ -26,37 +26,48 @@ class ChemistryChapterScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Select a Chapter',
-              style: TextStyle(
-                color: Colors.blueAccent,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blueAccent, Colors.white],
+            stops: [0.0, 0.5],
+          ),
+        ),
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Select a Chapter',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: ChapterList(
-              subjectId: subjectId,
-              onChapterTap: (chapter) {
-                Navigator.pushNamed(
-                  context,
-                  '/selectDifficulty',
-                  arguments: {
-                    'username': username,
-                    'testType': testType,
-                    'subjectId': subjectId,
-                    'chapt': chapter.chapterName,
-                  },
-                );
-              },
+            Expanded(
+              child: ChapterList(
+                subjectId: subjectId,
+                accentColor: Colors.blueAccent,
+                onChapterTap: (chapter) {
+                  Navigator.pushNamed(
+                    context,
+                    '/selectDifficulty',
+                    arguments: {
+                      'username': username,
+                      'testType': testType,
+                      'subjectId': subjectId,
+                      'chapt': chapter.chapterName,
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

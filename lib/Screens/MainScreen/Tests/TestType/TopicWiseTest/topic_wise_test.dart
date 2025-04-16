@@ -92,8 +92,8 @@ class TopicWiseTestScreen extends StatelessWidget {
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
+                    crossAxisSpacing: 24,
+                    mainAxisSpacing: 24,
                     children: [
                       _buildSubjectCard(
                         context,
@@ -184,10 +184,17 @@ class TopicWiseTestScreen extends StatelessWidget {
                 color: subjectColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Image.asset(
-                imagePath,
-                height: 80,
-                width: 80,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Responsive image size: max 60px or 40% of card width, whichever is smaller
+                  double imageSize = (constraints.maxWidth * 0.4).clamp(40, 60);
+                  return Image.asset(
+                    imagePath,
+                    height: imageSize,
+                    width: imageSize,
+                    fit: BoxFit.contain,
+                  );
+                },
               ),
             ),
             const SizedBox(height: 15),

@@ -34,6 +34,7 @@ class TestSelectionScreen extends StatelessWidget {
               children: [
                 // Welcome Card
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -80,7 +81,6 @@ class TestSelectionScreen extends StatelessWidget {
                 // Test Selection Buttons
                 Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildTestSelectionButton(
                         label: 'Topic-Wise Test',
@@ -91,6 +91,7 @@ class TestSelectionScreen extends StatelessWidget {
                         testType: 'topic-wise',
                         color: Colors.orange.shade400,
                       ),
+                      const SizedBox(height: 24),
                       _buildTestSelectionButton(
                         label: 'Subject-Wise Test',
                         icon: Icons.subject,
@@ -100,6 +101,7 @@ class TestSelectionScreen extends StatelessWidget {
                         testType: 'subject-wise',
                         color: Colors.green.shade400,
                       ),
+                      const SizedBox(height: 24),
                       _buildTestSelectionButton(
                         label: 'Full Syllabus Test',
                         icon: Icons.menu_book,
@@ -131,7 +133,7 @@ class TestSelectionScreen extends StatelessWidget {
   }) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: EdgeInsets.zero,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
