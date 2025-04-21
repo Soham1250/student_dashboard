@@ -53,7 +53,7 @@ CET Student Dashboard is a Flutter-based mobile application designed to help stu
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/student_dashboard.git
+git clone https://github.com/Soham1250/student_dashboard.git
 ```
 
 2. Navigate to the project directory:
