@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:student_dashboard/widgets/chapter_list.dart';
+import 'package:personalized_cet_mastery/widgets/chapter_list.dart';
 
 class LearnChapterScreen extends StatelessWidget {
   final Map<String, Color> subjectColors = {
@@ -12,11 +12,13 @@ class LearnChapterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final String username = args['username'] as String? ?? 'Unknown';
     final String subjectID = args['subjectID'] as String? ?? 'Unknown';
     final String subjectName = args['subjectName'] as String? ?? 'Unknown';
-    final Color subjectColor = subjectColors[subjectName] ?? Colors.blue.shade400;
+    final Color subjectColor =
+        subjectColors[subjectName] ?? Colors.blue.shade400;
 
     return Scaffold(
       appBar: AppBar(

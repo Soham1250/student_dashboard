@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:student_dashboard/services/auth_storage_service.dart';
+import 'package:personalized_cet_mastery/services/auth_storage_service.dart';
 import '../api/api_service.dart';
 import '../models/student_profile.dart';
 
@@ -20,8 +20,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _handleEdit() {
     // Will be implemented later
   }
-
-  
 
   void _handleLogout() async {
     await _authStorage.clearCredentials();

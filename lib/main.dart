@@ -53,13 +53,13 @@ void main() async {
     debugPrint('Error checking credentials: $e');
   }
 
-  runApp(StudentDashboardApp(isLoggedIn: isLoggedIn));
+  runApp(PersonalizedCETMasteryApp(isLoggedIn: isLoggedIn));
 }
 
-class StudentDashboardApp extends StatelessWidget {
+class PersonalizedCETMasteryApp extends StatelessWidget {
   final bool isLoggedIn;
 
-  const StudentDashboardApp({super.key, required this.isLoggedIn});
+  const PersonalizedCETMasteryApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +70,7 @@ class StudentDashboardApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Student Dashboard',
+        title: 'Personalized CET Mastery',
         theme: ThemeData(
           primarySwatch: Colors.brown,
         ),

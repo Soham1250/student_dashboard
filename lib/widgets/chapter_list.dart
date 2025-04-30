@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:student_dashboard/models/chapter.dart';
-import 'package:student_dashboard/api/api_service.dart';
-import 'package:student_dashboard/api/endpoints.dart';
+import 'package:personalized_cet_mastery/api/api_service.dart';
+import 'package:personalized_cet_mastery/models/chapter.dart';
+import 'package:personalized_cet_mastery/api/endpoints.dart';
 
 class ChapterList extends StatelessWidget {
   final String subjectId;
@@ -20,7 +20,7 @@ class ChapterList extends StatelessWidget {
     try {
       final endpoint = '$baseUrl/getsubjectchapters/${int.parse(subjectId)}';
       final response = await _apiService.getRequest(endpoint);
-      
+
       if (response is List) {
         return response.map((json) => Chapter.fromJson(json)).toList();
       }

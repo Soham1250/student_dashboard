@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:student_dashboard/widgets/chapter_list.dart';
+import 'package:personalized_cet_mastery/widgets/chapter_list.dart';
 
 class MathChapterScreen extends StatelessWidget {
   const MathChapterScreen({super.key});
