@@ -5,7 +5,7 @@ import 'dart:math';
 import '../../../../../api/api_service.dart';
 import '../../../../../api/endpoints.dart';
 import '../../TestAnalysis/universal_test_analysis.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+// import 'package:webview_flutter/webview_flutter.dart';
 
 class ContentSegment {
   final String content;
@@ -116,7 +116,7 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
   late Animation<double> _animation;
   final Color sidebarBackgroundColor =
       Color(0xFFFCE4EC); // Light pink background
-  late final WebViewController _controller;
+  // late final WebViewController _controller;
 
   @override
   void initState() {
@@ -141,9 +141,9 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
       _animationController.reverse();
     }
 
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse('https://www.google.com'));
+    // _controller = WebViewController()
+    //   ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    //   ..loadRequest(Uri.parse('https://www.google.com'));
   }
 
   @override
@@ -849,11 +849,11 @@ class _UniversalTestInterfaceState extends State<UniversalTestInterface>
             ),
           ),
           const SizedBox(height: 10),
-          Container(
-              height: 400, // Set a fixed height for the WebView
-              child: WebViewWidget(controller: _controller),
-            ),
-          // _buildTeXView(questions[currentQuestionIndex]['question'] as String),
+          // Container(
+          //     height: 400, // Set a fixed height for the WebView
+          //     child: WebViewWidget(controller: _controller),
+          //   ),
+          _buildTeXView(questions[currentQuestionIndex]['question'] as String),
           const SizedBox(height: 20),
           ...(questions[currentQuestionIndex]['options'] as List<String>)
               .asMap()

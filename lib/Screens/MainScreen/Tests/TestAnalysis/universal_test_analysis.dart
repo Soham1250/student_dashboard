@@ -414,7 +414,7 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
           ),
         ),
         SizedBox(
-          height: 500,
+          height: 500, // You can adjust this height as needed
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: questions.length,
@@ -422,7 +422,7 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
               final question = questions[index];
               return Container(
                 width: MediaQuery.of(context).size.width * 0.85,
-                margin: const EdgeInsets.symmetric(horizontal: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -458,7 +458,7 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Question ${question['index'] + 1}',
+                              'Question ${index + 1}',
                               style: TextStyle(
                                 color: color,
                                 fontWeight: FontWeight.bold,
@@ -484,7 +484,8 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
                                   ),
                                 ),
                                 child: _buildTeXView(
-                                    question['options'][index] as String),
+                                    question['question'] as String ??
+                                        'Question text not available'),
                               ),
                               const SizedBox(height: 20),
                               if (question['userAnswer'] != null) ...[
@@ -510,12 +511,12 @@ class _UniversalTestAnalysisState extends State<UniversalTestAnalysis> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: question['isCorrect'] as bool
+                                    color: (question['isCorrect'] ?? false)
                                         ? Colors.green.shade50
                                         : Colors.red.shade50,
                                     borderRadius: BorderRadius.circular(15),
                                     border: Border.all(
-                                      color: question['isCorrect'] as bool
+                                      color: (question['isCorrect'] ?? false)
                                           ? Colors.green.shade300
                                           : Colors.red.shade300,
                                     ),

@@ -1,6 +1,6 @@
 // api/endpoints.dart
 
-const String baseUrl = 'http://localhost:4000/api';
+const String baseUrl = 'http://13.233.199.220:4000/api';
 
 // Authentication
 const String emailOtpEndpoint = '$baseUrl/emailotp';
